@@ -1,0 +1,58 @@
+
+import React from 'react';
+import { UserCalculation } from '../types';
+import { PieChart } from 'lucide-react';
+
+interface ConsumptionStatsProps {
+  calculations: UserCalculation[];
+  totalUnits: number;
+}
+
+const ConsumptionStats: React.FC<ConsumptionStatsProps> = ({ calculations, totalUnits }) => {
+  return (
+    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 print-break-inside-avoid">
+      <div className="flex items-center gap-2 mb-6 border-b border-slate-100 pb-4">
+        <PieChart className="w-5 h-5 text-indigo-600" />
+        <h2 className="text-lg font-semibold text-slate-800">Consumption Share</h2>
+      </div>
+      <div className="space-y-5">
+        {calculations.map((user, index) => {
+          const percentage = totalUnits > 0 ? (user.unitsUsed / totalUnits) * 100 : 0;
+          // Generate a color based on index to differentiate users visually, similar to the previous chart
+          const colors = ['bg-indigo-600', 'bg-purple-600', 'bg-pink-600', 'bg-rose-600', 'bg-emerald-600', 'bg-blue-600'];
+          const colorClass = colors[index % colors.length];
+
+          return (
+            <div key={user.id}>
+              <div className="flex justify-between text-sm mb-2">
+                <div className="flex items-center gap-2">
+                   <div className={`w-2 h-2 rounded-full ${colorClass}`}></div>
+                   <span className="font-medium text-slate-700">{user.name}</span>
+                </div>
+                <div className="text-right">
+                  <span className="font-bold text-slate-900">{percentage.toFixed(1)}%</span>
+                  <span className="text-slate-400 mx-1">•</span>
+                  <span className="text-slate-500">{user.unitsUsed} kWh</span>
+                </div>
+              </div>
+              <div className="w-full bg-slate-100 rounded-full h-2">
+                <div 
+                  className={`${colorClass} h-2 rounded-full transition-all duration-500 ease-out`} 
+                  style={{ width: `${percentage}%` }}
+                ></div>
+              </div>
+            </div>
+          );
+        })}
+        
+        {calculations.length === 0 && (
+          <div className="text-center text-slate-400 text-sm py-4">
+            No active meters to display stats.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default ConsumptionStats;

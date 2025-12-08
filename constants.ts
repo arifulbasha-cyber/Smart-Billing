@@ -1,0 +1,26 @@
+
+import { MeterReading } from "./types";
+
+export const INITIAL_CONFIG = {
+  month: new Date().toLocaleString('default', { month: 'long' }),
+  dateGenerated: new Date().toISOString().split('T')[0],
+  totalBillPayable: 1497,
+  vat: 71,
+  demandCharge: 84,
+  meterRent: 10,
+  bkashFee: 0,
+};
+
+export const INITIAL_MAIN_METER: MeterReading = {
+  id: 'main',
+  name: 'Main Meter',
+  meterNo: '0',
+  previous: 2145,
+  current: 2280,
+};
+
+export const INITIAL_METERS: MeterReading[] = [
+  { id: '1', name: 'Uttom', meterNo: '1', previous: 0, current: 30 },
+  { id: '2', name: 'Anayet', meterNo: '2', previous: 0, current: 100 },
+  { id: '3', name: 'Arif', meterNo: '3', previous: 0, current: 75 },
+];
