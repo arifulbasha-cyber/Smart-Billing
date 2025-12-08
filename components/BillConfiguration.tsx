@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { BillConfig } from '../types';
 import { Settings, Calculator, CreditCard, Banknote, Calendar, Percent } from 'lucide-react';
@@ -10,8 +9,13 @@ interface BillConfigurationProps {
 
 const BillConfiguration: React.FC<BillConfigurationProps> = ({ config, onChange }) => {
   const handleChange = (key: keyof BillConfig) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const val = e.target.type === 'number' ? parseFloat(e.target.value) || 0 : e.target.value;
+    // Prevent NaN by defaulting to 0 if parsing fails
+    const val = e.target.type === 'number' ? (parseFloat(e.target.value) || 0) : e.target.value;
     onChange(key, val);
+  };
+
+  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    e.target.select();
   };
 
   return (
@@ -57,8 +61,10 @@ const BillConfiguration: React.FC<BillConfigurationProps> = ({ config, onChange 
           <div className="relative">
             <input
               type="number"
+              min="0"
               value={config.totalBillPayable}
               onChange={handleChange('totalBillPayable')}
+              onFocus={handleFocus}
               className="w-full rounded-lg border-slate-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm font-bold text-slate-900 pr-8"
             />
             <span className="absolute right-3 top-2.5 text-xs text-slate-400 font-medium pointer-events-none">BDT</span>
@@ -72,8 +78,10 @@ const BillConfiguration: React.FC<BillConfigurationProps> = ({ config, onChange 
           </label>
           <input
             type="number"
+            min="0"
             value={config.demandCharge}
             onChange={handleChange('demandCharge')}
+            onFocus={handleFocus}
             className="w-full rounded-lg border-slate-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm"
           />
         </div>
@@ -85,8 +93,10 @@ const BillConfiguration: React.FC<BillConfigurationProps> = ({ config, onChange 
           </label>
           <input
             type="number"
+            min="0"
             value={config.meterRent}
             onChange={handleChange('meterRent')}
+            onFocus={handleFocus}
             className="w-full rounded-lg border-slate-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm"
           />
         </div>
@@ -98,8 +108,10 @@ const BillConfiguration: React.FC<BillConfigurationProps> = ({ config, onChange 
           </label>
           <input
             type="number"
+            min="0"
             value={config.vat}
             onChange={handleChange('vat')}
+            onFocus={handleFocus}
             className="w-full rounded-lg border-slate-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm"
           />
         </div>
@@ -111,8 +123,10 @@ const BillConfiguration: React.FC<BillConfigurationProps> = ({ config, onChange 
           </label>
           <input
             type="number"
+            min="0"
             value={config.bkashFee}
             onChange={handleChange('bkashFee')}
+            onFocus={handleFocus}
             placeholder="0"
             className="w-full rounded-lg border-indigo-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm bg-white text-indigo-700 font-medium"
           />

@@ -1,4 +1,3 @@
-
 import React, { useRef, useState } from 'react';
 import { BillCalculationResult, BillConfig, MeterReading } from '../types';
 import { FileText, Printer, Image as ImageIcon, Save, Loader2 } from 'lucide-react';
