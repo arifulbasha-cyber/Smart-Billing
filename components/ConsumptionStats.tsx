@@ -1,7 +1,7 @@
-
 import React from 'react';
 import { UserCalculation } from '../types';
 import { PieChart } from 'lucide-react';
+import { useLanguage } from '../i18n';
 
 interface ConsumptionStatsProps {
   calculations: UserCalculation[];
@@ -9,11 +9,12 @@ interface ConsumptionStatsProps {
 }
 
 const ConsumptionStats: React.FC<ConsumptionStatsProps> = ({ calculations, totalUnits }) => {
+  const { t } = useLanguage();
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 print-break-inside-avoid">
       <div className="flex items-center gap-2 mb-6 border-b border-slate-100 pb-4">
         <PieChart className="w-5 h-5 text-indigo-600" />
-        <h2 className="text-lg font-semibold text-slate-800">Consumption Share</h2>
+        <h2 className="text-lg font-semibold text-slate-800">{t('consumption_share')}</h2>
       </div>
       <div className="space-y-5">
         {calculations.map((user, index) => {
@@ -27,7 +28,7 @@ const ConsumptionStats: React.FC<ConsumptionStatsProps> = ({ calculations, total
               <div className="flex justify-between text-sm mb-2">
                 <div className="flex items-center gap-2">
                    <div className={`w-2 h-2 rounded-full ${colorClass}`}></div>
-                   <span className="font-medium text-slate-700">{user.name}</span>
+                   <span className="font-medium text-slate-700">{t(user.name)}</span>
                 </div>
                 <div className="text-right">
                   <span className="font-bold text-slate-900">{percentage.toFixed(1)}%</span>
@@ -47,7 +48,7 @@ const ConsumptionStats: React.FC<ConsumptionStatsProps> = ({ calculations, total
         
         {calculations.length === 0 && (
           <div className="text-center text-slate-400 text-sm py-4">
-            No active meters to display stats.
+            {t('no_active_meters')}
           </div>
         )}
       </div>

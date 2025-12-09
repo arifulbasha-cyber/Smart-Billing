@@ -7,9 +7,12 @@ import ConsumptionStats from './components/ConsumptionStats';
 import CalculationSummary from './components/CalculationSummary';
 import BillHistory from './components/BillHistory';
 import BillEstimator from './components/BillEstimator';
-import { Lightbulb, Database, Download } from 'lucide-react';
+import { Lightbulb, Database, Download, Globe } from 'lucide-react';
+import { LanguageProvider, useLanguage } from './i18n';
 
-const App: React.FC = () => {
+// Inner App component to use the hook
+const AppContent: React.FC = () => {
+  const { t, language, setLanguage } = useLanguage();
   const [config, setConfig] = useState<BillConfig>(INITIAL_CONFIG);
   const [mainMeter, setMainMeter] = useState<MeterReading>(INITIAL_MAIN_METER);
   const [meters, setMeters] = useState<MeterReading[]>(INITIAL_METERS);
@@ -64,11 +67,11 @@ const App: React.FC = () => {
     const updatedHistory = [newRecord, ...history];
     setHistory(updatedHistory);
     localStorage.setItem('tmss_bill_history', JSON.stringify(updatedHistory));
-    alert('Bill record saved successfully!');
+    alert(t('saved_success'));
   };
 
   const loadFromHistory = (record: SavedBill) => {
-    if (window.confirm(`Load bill for ${record.config.month}? Current unsaved changes will be lost.`)) {
+    if (window.confirm(t('confirm_load').replace('{month}', record.config.month))) {
       setConfig(record.config);
       setMainMeter(record.mainMeter);
       setMeters(record.meters);
@@ -76,7 +79,7 @@ const App: React.FC = () => {
   };
 
   const deleteFromHistory = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this record?')) {
+    if (window.confirm(t('confirm_delete'))) {
       const updatedHistory = history.filter(h => h.id !== id);
       setHistory(updatedHistory);
       localStorage.setItem('tmss_bill_history', JSON.stringify(updatedHistory));
@@ -161,7 +164,7 @@ const App: React.FC = () => {
             <div className="bg-indigo-600 p-2 rounded-lg shrink-0">
               <Lightbulb className="w-5 h-5 text-white" />
             </div>
-            <h1 className="text-xl font-bold text-slate-900 tracking-tight">TMSS Bill Splitter</h1>
+            <h1 className="text-xl font-bold text-slate-900 tracking-tight">{t('app_title')}</h1>
           </div>
           
           <div className="flex items-center gap-3">
@@ -170,9 +173,26 @@ const App: React.FC = () => {
                 onClick={handleInstallClick}
                 className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 text-white text-xs font-semibold rounded-full shadow-sm hover:bg-slate-800 transition-all animate-pulse"
               >
-                <Download className="w-3 h-3" /> Install App
+                <Download className="w-3 h-3" /> {t('install_app')}
               </button>
             )}
+            
+            {/* Language Toggle */}
+            <div className="flex items-center bg-slate-100 rounded-full p-0.5 border border-slate-200">
+               <button 
+                  onClick={() => setLanguage('en')}
+                  className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${language === 'en' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+               >
+                  EN
+               </button>
+               <button 
+                  onClick={() => setLanguage('bn')}
+                  className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${language === 'bn' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+               >
+                  BN
+               </button>
+            </div>
+
             <div className="text-sm text-slate-500 font-medium bg-slate-100 sm:bg-transparent px-3 py-1 rounded-full sm:p-0">
               {config.month} • {formatDate(config.dateGenerated)}
             </div>
@@ -187,7 +207,7 @@ const App: React.FC = () => {
           <div className="lg:col-span-5 space-y-6 no-print">
             <div className="flex items-center gap-2 text-slate-800 pb-2 border-b border-slate-200">
               <Database className="w-5 h-5 text-slate-500" />
-              <h2 className="text-lg font-bold">Data Input Part</h2>
+              <h2 className="text-lg font-bold">{t('data_input_part')}</h2>
             </div>
             
             <BillConfiguration config={config} onChange={handleConfigChange} />
@@ -214,10 +234,10 @@ const App: React.FC = () => {
             
             {/* Logic Explainer */}
             <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 text-sm text-blue-800">
-              <h4 className="font-semibold mb-2">How is this calculated?</h4>
+              <h4 className="font-semibold mb-2">{t('how_calc')}</h4>
               <ul className="list-disc list-inside space-y-1 opacity-80 text-xs">
-                 <li><strong>VAT Fixed:</strong> (Demand + Rent) × 5%</li>
-                 <li><strong>VAT Distributed:</strong> Input VAT - VAT Fixed</li>
+                 <li><strong>{t('vat_fixed')}:</strong> (Demand + Rent) × 5%</li>
+                 <li><strong>{t('vat_distributed')}:</strong> Input VAT - VAT Fixed</li>
                  <li><strong>Rate/Unit:</strong> (Total Bill - Demand - Rent - VAT Fixed) ÷ Total Units</li>
                  <li><strong>Fixed Cost (User):</strong> (Demand + Rent + VAT Fixed + bKash) ÷ Users</li>
                  <li><strong>Payable:</strong> (Units × Rate) + Fixed Cost</li>
@@ -240,6 +260,14 @@ const App: React.FC = () => {
         </div>
       </main>
     </div>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <LanguageProvider>
+      <AppContent />
+    </LanguageProvider>
   );
 };
 

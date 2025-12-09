@@ -1,6 +1,7 @@
 import React from 'react';
 import { BillConfig } from '../types';
 import { Settings, Calculator, CreditCard, Banknote, Calendar, Percent } from 'lucide-react';
+import { useLanguage } from '../i18n';
 
 interface BillConfigurationProps {
   config: BillConfig;
@@ -8,6 +9,8 @@ interface BillConfigurationProps {
 }
 
 const BillConfiguration: React.FC<BillConfigurationProps> = ({ config, onChange }) => {
+  const { t } = useLanguage();
+
   const handleChange = (key: keyof BillConfig) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     // Prevent NaN by defaulting to 0 if parsing fails
     const val = e.target.type === 'number' ? (parseFloat(e.target.value) || 0) : e.target.value;
@@ -22,14 +25,14 @@ const BillConfiguration: React.FC<BillConfigurationProps> = ({ config, onChange 
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 print-break-inside-avoid">
       <div className="flex items-center gap-2 mb-6 border-b border-slate-100 pb-4">
         <Settings className="w-5 h-5 text-indigo-600" />
-        <h2 className="text-lg font-semibold text-slate-800">Costs Configuration</h2>
+        <h2 className="text-lg font-semibold text-slate-800">{t('costs_configuration')}</h2>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* Date Config - Full width on small, spans full on lg row 1 */}
         <div className="col-span-1 md:col-span-2 lg:col-span-3 grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
            <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Bill Month</label>
+            <label className="block text-xs font-bold text-slate-500 uppercase mb-2">{t('bill_month')}</label>
             <select
               value={config.month}
               onChange={handleChange('month')}
@@ -42,7 +45,7 @@ const BillConfiguration: React.FC<BillConfigurationProps> = ({ config, onChange 
           </div>
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase mb-2 flex items-center gap-1">
-              Date Generated <Calendar className="w-3 h-3" />
+              {t('date_generated')} <Calendar className="w-3 h-3" />
             </label>
             <input
               type="date"
@@ -56,7 +59,7 @@ const BillConfiguration: React.FC<BillConfigurationProps> = ({ config, onChange 
         {/* Total Bill */}
         <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 hover:border-indigo-200 transition-colors">
           <label className="block text-xs font-bold text-slate-500 uppercase mb-2 flex items-center gap-1">
-            Total Bill Payable <Banknote className="w-3 h-3 text-indigo-500" />
+            {t('total_bill_payable')} <Banknote className="w-3 h-3 text-indigo-500" />
           </label>
           <div className="relative">
             <input
@@ -67,14 +70,14 @@ const BillConfiguration: React.FC<BillConfigurationProps> = ({ config, onChange 
               onFocus={handleFocus}
               className="w-full rounded-lg border-slate-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm font-bold text-slate-900 pr-8 bg-white"
             />
-            <span className="absolute right-3 top-2.5 text-xs text-slate-400 font-medium pointer-events-none">BDT</span>
+            <span className="absolute right-3 top-2.5 text-xs text-slate-400 font-medium pointer-events-none">{t('bdt')}</span>
           </div>
         </div>
 
         {/* Demand Charge */}
         <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 hover:border-indigo-200 transition-colors">
           <label className="block text-xs font-bold text-slate-500 uppercase mb-2 flex items-center gap-1">
-            Demand Charge <Calculator className="w-3 h-3" />
+            {t('demand_charge')} <Calculator className="w-3 h-3" />
           </label>
           <input
             type="number"
@@ -89,7 +92,7 @@ const BillConfiguration: React.FC<BillConfigurationProps> = ({ config, onChange 
         {/* Meter Rent */}
         <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 hover:border-indigo-200 transition-colors">
           <label className="block text-xs font-bold text-slate-500 uppercase mb-2 flex items-center gap-1">
-            Meter Rent <Calculator className="w-3 h-3" />
+            {t('meter_rent')} <Calculator className="w-3 h-3" />
           </label>
           <input
             type="number"
@@ -104,7 +107,7 @@ const BillConfiguration: React.FC<BillConfigurationProps> = ({ config, onChange 
         {/* VAT */}
         <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 hover:border-indigo-200 transition-colors">
           <label className="block text-xs font-bold text-slate-500 uppercase mb-2 flex items-center gap-1">
-            VAT (Total) <Percent className="w-3 h-3" />
+            {t('vat_total')} <Percent className="w-3 h-3" />
           </label>
           <input
             type="number"
@@ -119,7 +122,7 @@ const BillConfiguration: React.FC<BillConfigurationProps> = ({ config, onChange 
         {/* bKash Fee */}
         <div className="bg-indigo-50/50 p-4 rounded-xl border border-indigo-100 hover:border-indigo-200 transition-colors">
           <label className="block text-xs font-bold text-indigo-600 uppercase mb-2 flex items-center gap-1">
-            bKash Fee <CreditCard className="w-3 h-3" />
+            {t('bkash_fee')} <CreditCard className="w-3 h-3" />
           </label>
           <input
             type="number"

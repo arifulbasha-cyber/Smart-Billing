@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Calculator, Zap, Info, Banknote } from 'lucide-react';
+import { useLanguage } from '../i18n';
 
 interface SubStep {
   label: string;
@@ -16,6 +17,7 @@ interface LogicStep {
 }
 
 const BillEstimator: React.FC = () => {
+  const { t } = useLanguage();
   const [mode, setMode] = useState<'forward' | 'reverse'>('forward');
   const [units, setUnits] = useState<number | string>('');
   const [targetBill, setTargetBill] = useState<number | string>('');
@@ -75,17 +77,17 @@ const BillEstimator: React.FC = () => {
 
     // Section 1
     logicSteps.push({
-        title: "1. ⚙️ Reverse the VAT Calculation",
-        description: "First, you must remove the VAT and Fixed Charges to isolate the VAT-Exclusive Energy Cost, which is the amount directly derived from units.",
+        title: t('step1_title'),
+        description: t('step1_desc'),
         subSteps: [
             {
-                label: "Step 1a: Remove VAT to Find the Taxable Base",
-                text: `The Total Bill is the Taxable Base multiplied by (1 + VAT Rate).`,
+                label: t('step1a_label'),
+                text: t('step1a_text'),
                 calculation: `${bill.toFixed(2)} / 1.05 = ${taxableBase.toFixed(2)}`
             },
             {
-                label: "Step 1b: Remove Fixed Charges to Find Energy Cost",
-                text: `The Total Subject to VAT includes the Fixed Charges. Subtract them to find the energy cost.`,
+                label: t('step1b_label'),
+                text: t('step1b_text'),
                 calculation: `${taxableBase.toFixed(2)} - ${(DEMAND_CHARGE + METER_RENT).toFixed(2)} = ${energyCost.toFixed(2)}`
             }
         ]
@@ -115,8 +117,8 @@ const BillEstimator: React.FC = () => {
               remainingCost -= maxCostForSlab;
               
               slabSubSteps.push({
-                  label: `Step 2${String.fromCharCode(97 + i)}: Test Slab ${stepBase.slabIndex}`,
-                  text: `Subtract the cost of the first full slab from your Energy Cost.`,
+                  label: `${t('test_slab')} ${stepBase.slabIndex}`,
+                  text: t('test_slab_text'),
                   calculation: `${stepBase.startCost.toFixed(2)} - ${maxCostForSlab.toFixed(2)} = ${remainingCost.toFixed(2)}`,
                   note: `Since remaining cost (${remainingCost.toFixed(2)}) is > 0, consumption is over ${slab.limit} units.`
               });
@@ -126,9 +128,9 @@ const BillEstimator: React.FC = () => {
               totalUnits += unitsInSlab;
               
               slabSubSteps.push({
-                  label: `Step 2${String.fromCharCode(97 + i)}: Calculate Units in Final Slab (Slab ${stepBase.slabIndex})`,
-                  text: `The remaining cost (${stepBase.startCost.toFixed(2)}) must be the cost generated in this slab (Rate: ${slab.rate}). Divide cost by rate.`,
-                  calculation: `${stepBase.startCost.toFixed(2)} / ${slab.rate} = ${unitsInSlab.toFixed(2)} units`
+                  label: `${t('calc_slab')} (${t('test_slab')} ${stepBase.slabIndex})`,
+                  text: t('calc_slab_text'),
+                  calculation: `${stepBase.startCost.toFixed(2)} / ${slab.rate} = ${unitsInSlab.toFixed(2)} ${t('units')}`
               });
               
               remainingCost = 0;
@@ -143,34 +145,34 @@ const BillEstimator: React.FC = () => {
            const extraUnits = remainingCost / lastRate;
            totalUnits += extraUnits;
            slabSubSteps.push({
-              label: `Step 2+: Above Slab Limit`,
-              text: `Remaining cost attributed to highest rate (${lastRate}).`,
-              calculation: `${remainingCost.toFixed(2)} / ${lastRate} = ${extraUnits.toFixed(2)} units`
+              label: t('above_slab_limit'),
+              text: t('above_slab_text'),
+              calculation: `${remainingCost.toFixed(2)} / ${lastRate} = ${extraUnits.toFixed(2)} ${t('units')}`
            });
       }
     } else {
         slabSubSteps.push({
-            label: "No Usage",
-            text: "Energy cost is zero or negative, meaning the bill only covers fixed charges or is invalid.",
+            label: t('no_usage'),
+            text: t('no_usage_text'),
             calculation: "0 units"
         });
     }
 
     // Section 2
     logicSteps.push({
-        title: "2. ⚡ Reverse the Tiered Rate Calculation (The Hard Part)",
-        description: `Now you know the VAT-Exclusive Energy Cost is ${energyCost.toFixed(2)}. You must now figure out how many units generated this cost, working backward through the slabs.`,
+        title: t('step2_title'),
+        description: t('step2_desc'),
         tableHeader: true,
         subSteps: slabSubSteps
     });
     
     // Section 3
     logicSteps.push({
-        title: "3. Calculate Total Unit Consumption",
-        description: "Sum the units used in all the completed slabs and the units calculated for the final slab.",
+        title: t('step3_title'),
+        description: t('step3_desc'),
         subSteps: [{
-            label: "Final Sum",
-            text: `Total Units calculated across steps.`,
+            label: t('final_sum'),
+            text: t('final_sum_text'),
             calculation: `= ${totalUnits.toFixed(2)} kWh`
         }]
     });
@@ -190,7 +192,7 @@ const BillEstimator: React.FC = () => {
       <div className="flex items-center justify-between mb-6 border-b border-slate-100 pb-4">
         <div className="flex items-center gap-2">
           <Calculator className="w-5 h-5 text-indigo-600" />
-          <h2 className="text-lg font-semibold text-slate-800">Bill Estimator</h2>
+          <h2 className="text-lg font-semibold text-slate-800">{t('bill_estimator')}</h2>
         </div>
         <div className="flex bg-slate-100 p-1 rounded-lg shrink-0">
           <button
@@ -202,8 +204,8 @@ const BillEstimator: React.FC = () => {
             }`}
           >
             <Zap className="w-3 h-3" />
-            <span className="hidden sm:inline">Units to Cost</span>
-            <span className="sm:hidden">Units</span>
+            <span className="hidden sm:inline">{t('units_to_cost')}</span>
+            <span className="sm:hidden">{t('units')}</span>
           </button>
           <button
             onClick={() => setMode('reverse')}
@@ -214,8 +216,8 @@ const BillEstimator: React.FC = () => {
             }`}
           >
             <Banknote className="w-3 h-3" />
-            <span className="hidden sm:inline">Cost to Units</span>
-            <span className="sm:hidden">Cost</span>
+            <span className="hidden sm:inline">{t('cost_to_units')}</span>
+            <span className="sm:hidden">{t('cost')}</span>
           </button>
         </div>
       </div>
@@ -225,7 +227,7 @@ const BillEstimator: React.FC = () => {
           {/* Input */}
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase mb-2 flex items-center gap-1">
-              Enter Units Used <Zap className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+              {t('enter_units_used')} <Zap className="w-3 h-3 text-yellow-500 fill-yellow-500" />
             </label>
             <div className="relative">
               <input
@@ -244,15 +246,15 @@ const BillEstimator: React.FC = () => {
           {/* Forward Results */}
           <div className="bg-slate-50 rounded-lg p-4 border border-slate-200 space-y-3">
             <div className="flex justify-between items-center text-sm">
-              <span className="text-slate-600">Energy Cost (Slab Rate)</span>
+              <span className="text-slate-600">{t('energy_cost_slab')}</span>
               <span className="font-medium text-slate-900">{forwardResult.energyCost.toFixed(2)}</span>
             </div>
             <div className="flex justify-between items-center text-sm">
-              <span className="text-slate-600">Demand Charge</span>
+              <span className="text-slate-600">{t('demand_charge')}</span>
               <span className="font-medium text-slate-900">{DEMAND_CHARGE}</span>
             </div>
             <div className="flex justify-between items-center text-sm">
-              <span className="text-slate-600">Meter Rent</span>
+              <span className="text-slate-600">{t('meter_rent')}</span>
               <span className="font-medium text-slate-900">{METER_RENT}</span>
             </div>
             
@@ -260,18 +262,18 @@ const BillEstimator: React.FC = () => {
 
             <div className="flex justify-between items-center text-sm">
               <div className="flex items-center gap-1">
-                  <span className="text-slate-600">Total Base</span>
-                  <span className="text-[10px] text-slate-400 bg-slate-100 px-1 rounded border border-slate-200">Subject to VAT</span>
+                  <span className="text-slate-600">{t('total_base')}</span>
+                  <span className="text-[10px] text-slate-400 bg-slate-100 px-1 rounded border border-slate-200">{t('subject_to_vat')}</span>
               </div>
               <span className="font-medium text-slate-900">{forwardResult.totalSubjectToVat.toFixed(2)}</span>
             </div>
             <div className="flex justify-between items-center text-sm text-slate-600">
-              <span>VAT (5%)</span>
+              <span>{t('vat_total')}</span>
               <span>{forwardResult.vatAmount.toFixed(2)}</span>
             </div>
 
             <div className="border-t border-slate-200 pt-2 flex justify-between items-center">
-              <span className="font-bold text-indigo-900 uppercase text-xs tracking-wider">Est. Total Payable</span>
+              <span className="font-bold text-indigo-900 uppercase text-xs tracking-wider">{t('est_total_payable')}</span>
               <span className="font-bold text-indigo-700 text-xl">৳{Math.round(forwardResult.totalPayable)}</span>
             </div>
           </div>
@@ -280,9 +282,7 @@ const BillEstimator: React.FC = () => {
           <div className="flex gap-2 items-start bg-indigo-50 text-indigo-800 p-3 rounded-md text-xs">
             <Info className="w-4 h-4 mt-0.5 shrink-0" />
             <p className="opacity-90 leading-relaxed">
-              This calculation uses the LT-A residential slab rates: 
-              0-75 units @ 5.26, 76-200 @ 7.20, 201-300 @ 7.59, 301-400 @ 8.02. 
-              Includes 5% VAT on the total base amount.
+              {t('forward_explainer')}
             </p>
           </div>
         </div>
@@ -291,7 +291,7 @@ const BillEstimator: React.FC = () => {
            {/* Reverse Input */}
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase mb-2 flex items-center gap-1">
-              Enter Total Bill Amount <Banknote className="w-3 h-3 text-indigo-500" />
+              {t('enter_total_bill')} <Banknote className="w-3 h-3 text-indigo-500" />
             </label>
             <div className="relative">
               <input
@@ -303,16 +303,18 @@ const BillEstimator: React.FC = () => {
                 placeholder="e.g. 1497.77"
                 className="w-full rounded-lg border-slate-200 focus:border-indigo-500 focus:ring-indigo-500 text-lg font-bold text-slate-900 pr-12 bg-white"
               />
-              <span className="absolute right-4 top-3 text-sm text-slate-400 font-medium pointer-events-none">BDT</span>
+              <span className="absolute right-4 top-3 text-sm text-slate-400 font-medium pointer-events-none">{t('bdt')}</span>
             </div>
           </div>
 
           {/* Intro Text */}
           <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 text-sm text-slate-600 space-y-2">
-            <p className="font-medium text-slate-800 uppercase tracking-wide text-xs">estimated unit uses</p>
+            <p className="font-medium text-slate-800 uppercase tracking-wide text-xs">{t('est_unit_uses')}</p>
             <p className="text-sm">
-              This is one of the most complex reverse calculations in utility billing because you are dealing with tiered rates.
-              When you know the total bill and need to find the units, you must reverse every step we just performed. This calculation cannot be done with a single formula; it requires a systematic, step-by-step reversal, often involving trial and error or iteration, because the rate per unit depends on the unknown total number of units.
+              {t('reverse_intro_1')}
+            </p>
+            <p className="text-sm">
+              {t('reverse_intro_2')}
             </p>
           </div>
 
@@ -323,22 +325,22 @@ const BillEstimator: React.FC = () => {
                   <table className="w-full text-sm text-left">
                     <thead className="bg-slate-100 text-slate-700 font-semibold text-xs uppercase">
                       <tr>
-                        <th className="p-3 border-b border-slate-200">Component</th>
-                        <th className="p-3 border-b border-slate-200">Value</th>
+                        <th className="p-3 border-b border-slate-200">{t('component')}</th>
+                        <th className="p-3 border-b border-slate-200">{t('value')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-slate-700 bg-white">
-                      <tr><td className="p-3">Total Payable Bill</td><td className="p-3 font-medium">{targetBill.toFixed(2)}</td></tr>
-                      <tr><td className="p-3">Fixed Charges (Demand + Rent)</td><td className="p-3 font-medium">{(DEMAND_CHARGE + METER_RENT).toFixed(2)}</td></tr>
-                      <tr><td className="p-3">VAT Rate</td><td className="p-3 font-medium">5% or 0.05</td></tr>
-                      <tr><td className="p-3">Slab Rates</td><td className="p-3 font-medium">{SLABS.map(s => s.rate).join(', ')}</td></tr>
+                      <tr><td className="p-3">{t('total_bill_payable')}</td><td className="p-3 font-medium">{targetBill.toFixed(2)}</td></tr>
+                      <tr><td className="p-3">{t('fixed_charges')}</td><td className="p-3 font-medium">{(DEMAND_CHARGE + METER_RENT).toFixed(2)}</td></tr>
+                      <tr><td className="p-3">{t('vat_rate')}</td><td className="p-3 font-medium">5% (0.05)</td></tr>
+                      <tr><td className="p-3">{t('slab_rates')}</td><td className="p-3 font-medium">{SLABS.map(s => s.rate).join(', ')}</td></tr>
                     </tbody>
                   </table>
                </div>
 
                {/* Big Result */}
                <div className="bg-indigo-50 rounded-xl p-5 border border-indigo-100 text-center">
-                  <div className="text-xs text-indigo-600 uppercase font-bold tracking-wider mb-1">Estimated Unit Consumption</div>
+                  <div className="text-xs text-indigo-600 uppercase font-bold tracking-wider mb-1">{t('estimated_consumption')}</div>
                   <div className="text-3xl font-bold text-slate-900">
                      {reverseResult.totalUnits.toFixed(2)} <span className="text-lg text-slate-500 font-medium">kWh</span>
                   </div>
@@ -357,10 +359,10 @@ const BillEstimator: React.FC = () => {
                            <table className="w-full text-xs text-left">
                              <thead className="bg-slate-100 text-slate-500 font-medium">
                                <tr>
-                                 <th className="p-2 border-b">Slab Range</th>
-                                 <th className="p-2 border-b">Units in Slab</th>
-                                 <th className="p-2 border-b">Rate</th>
-                                 <th className="p-2 border-b">Cost for Full Slab</th>
+                                 <th className="p-2 border-b">{t('slab_range')}</th>
+                                 <th className="p-2 border-b">{t('units_in_slab')}</th>
+                                 <th className="p-2 border-b">{t('rate')}</th>
+                                 <th className="p-2 border-b">{t('cost_full_slab')}</th>
                                </tr>
                              </thead>
                              <tbody className="divide-y divide-slate-100 text-slate-700 bg-white">
@@ -403,12 +405,12 @@ const BillEstimator: React.FC = () => {
                </div>
                
                <div className="bg-green-50 p-4 rounded-lg border border-green-100 text-xs text-green-800 font-medium leading-relaxed">
-                  <strong>Key Takeaway:</strong> If the price system uses tiered rates, you must reverse the fixed and VAT charges first, then work backward through the tiers to find which slab the final consumption fell into.
+                  <strong>{t('key_takeaway')}:</strong> {t('key_takeaway_text')}
                </div>
             </>
           ) : (
             <div className="text-center py-8 text-slate-400 text-sm bg-slate-50 rounded-lg border border-dashed border-slate-200">
-              Enter a bill amount to see the estimated units breakdown.
+              {t('enter_bill_prompt')}
             </div>
           )}
         </div>

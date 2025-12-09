@@ -1,6 +1,7 @@
 import React from 'react';
 import { MeterReading } from '../types';
 import { Users, Trash2, Plus, Zap, Lock, Hash, History, Gauge } from 'lucide-react';
+import { useLanguage } from '../i18n';
 
 interface MeterReadingsProps {
   mainMeter: MeterReading;
@@ -10,6 +11,8 @@ interface MeterReadingsProps {
 }
 
 const MeterReadings: React.FC<MeterReadingsProps> = ({ mainMeter, onMainMeterUpdate, readings, onUpdate }) => {
+  const { t } = useLanguage();
+  
   const handleChange = (id: string, key: keyof MeterReading, value: string | number) => {
     const updated = readings.map(r => r.id === id ? { ...r, [key]: value } : r);
     onUpdate(updated);
@@ -41,13 +44,13 @@ const MeterReadings: React.FC<MeterReadingsProps> = ({ mainMeter, onMainMeterUpd
       <div className="flex items-center justify-between mb-6 border-b border-slate-100 pb-4">
         <div className="flex items-center gap-2">
           <Users className="w-5 h-5 text-indigo-600" />
-          <h2 className="text-lg font-semibold text-slate-800">Meter Readings</h2>
+          <h2 className="text-lg font-semibold text-slate-800">{t('meter_readings')}</h2>
         </div>
         <button
           onClick={handleAdd}
           className="no-print flex items-center gap-1 text-xs sm:text-sm font-medium text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-md transition-colors"
         >
-          <Plus className="w-4 h-4" /> <span className="hidden sm:inline">Add Meter</span><span className="sm:hidden">Add</span>
+          <Plus className="w-4 h-4" /> <span className="hidden sm:inline">{t('add_meter')}</span><span className="sm:hidden">Add</span>
         </button>
       </div>
 
@@ -60,7 +63,7 @@ const MeterReadings: React.FC<MeterReadingsProps> = ({ mainMeter, onMainMeterUpd
                  <div className="bg-indigo-100 p-1.5 rounded-lg">
                     <Lock className="w-4 h-4 text-indigo-600" />
                  </div>
-                 <span className="font-bold text-slate-900 text-sm uppercase">Main Meter</span>
+                 <span className="font-bold text-slate-900 text-sm uppercase">{t('main_meter')}</span>
               </div>
               <div className="flex items-center gap-1 bg-white px-2 py-1 rounded-md border border-indigo-100 shadow-sm">
                  <Zap className="w-3 h-3 text-yellow-500 fill-yellow-500" />
@@ -73,7 +76,7 @@ const MeterReadings: React.FC<MeterReadingsProps> = ({ mainMeter, onMainMeterUpd
               {/* Meter No */}
               <div>
                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1 flex items-center gap-1">
-                    Meter No <Hash className="w-3 h-3" />
+                    {t('meter_no')} <Hash className="w-3 h-3" />
                  </label>
                  <input
                     type="text"
@@ -87,7 +90,7 @@ const MeterReadings: React.FC<MeterReadingsProps> = ({ mainMeter, onMainMeterUpd
               <div className="grid grid-cols-2 gap-3">
                  <div>
                     <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1 flex items-center gap-1">
-                       Previous <History className="w-3 h-3" />
+                       {t('previous')} <History className="w-3 h-3" />
                     </label>
                     <input
                        type="number"
@@ -99,7 +102,7 @@ const MeterReadings: React.FC<MeterReadingsProps> = ({ mainMeter, onMainMeterUpd
                  </div>
                  <div>
                     <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1 flex items-center gap-1">
-                       Current <Gauge className="w-3 h-3" />
+                       {t('current')} <Gauge className="w-3 h-3" />
                     </label>
                     <input
                        type="number"
@@ -122,7 +125,7 @@ const MeterReadings: React.FC<MeterReadingsProps> = ({ mainMeter, onMainMeterUpd
                   <button
                       onClick={() => handleRemove(reading.id)}
                       className="absolute top-3 right-3 text-slate-300 hover:text-red-500 transition-colors p-1 opacity-0 group-hover:opacity-100 focus:opacity-100"
-                      title="Remove meter"
+                      title={t('remove_meter')}
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -130,7 +133,7 @@ const MeterReadings: React.FC<MeterReadingsProps> = ({ mainMeter, onMainMeterUpd
                   {/* Header: Name Input */}
                   <div className="mb-4 pr-6">
                       <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1 flex items-center gap-1">
-                        User Name <Users className="w-3 h-3" />
+                        {t('user_name')} <Users className="w-3 h-3" />
                       </label>
                       <input
                         type="text"
@@ -146,7 +149,7 @@ const MeterReadings: React.FC<MeterReadingsProps> = ({ mainMeter, onMainMeterUpd
                   <div className="space-y-3">
                       <div>
                         <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1 flex items-center gap-1">
-                            Meter No <Hash className="w-3 h-3" />
+                            {t('meter_no')} <Hash className="w-3 h-3" />
                         </label>
                         <input
                             type="text"
@@ -160,7 +163,7 @@ const MeterReadings: React.FC<MeterReadingsProps> = ({ mainMeter, onMainMeterUpd
                       <div className="grid grid-cols-2 gap-3">
                         <div>
                             <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1 flex items-center gap-1">
-                                Previous <History className="w-3 h-3" />
+                                {t('previous')} <History className="w-3 h-3" />
                             </label>
                             <input
                                 type="number"
@@ -172,7 +175,7 @@ const MeterReadings: React.FC<MeterReadingsProps> = ({ mainMeter, onMainMeterUpd
                         </div>
                         <div>
                             <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1 flex items-center gap-1">
-                                Current <Gauge className="w-3 h-3" />
+                                {t('current')} <Gauge className="w-3 h-3" />
                             </label>
                             <input
                                 type="number"
@@ -187,7 +190,7 @@ const MeterReadings: React.FC<MeterReadingsProps> = ({ mainMeter, onMainMeterUpd
 
                   {/* Footer Stats */}
                   <div className="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center">
-                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Consumption</span>
+                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('consumption')}</span>
                      <div className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs font-bold ${units > 100 ? 'bg-orange-50 text-orange-700' : 'bg-green-50 text-green-700'}`}>
                         {units} <span className="text-[10px] font-normal opacity-80">kWh</span>
                      </div>
@@ -200,7 +203,7 @@ const MeterReadings: React.FC<MeterReadingsProps> = ({ mainMeter, onMainMeterUpd
         <div className="col-span-1 md:col-span-2 lg:col-span-3 bg-slate-900 p-4 rounded-xl text-white flex justify-between items-center shadow-md">
             <div className="flex items-center gap-2">
                 <Zap className="w-5 h-5 text-yellow-400 fill-yellow-400" />
-                <span className="font-bold text-sm uppercase tracking-wider">Total User Units</span>
+                <span className="font-bold text-sm uppercase tracking-wider">{t('total_user_units')}</span>
             </div>
             <div className="text-2xl font-bold font-mono">
                 {totalUnits} <span className="text-sm font-normal text-slate-400">kWh</span>
