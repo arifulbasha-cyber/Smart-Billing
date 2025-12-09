@@ -1,6 +1,6 @@
 import React from 'react';
 import { MeterReading } from '../types';
-import { Users, Trash2, Plus, Zap, Lock } from 'lucide-react';
+import { Users, Trash2, Plus, Zap, Lock, Hash, History, Gauge } from 'lucide-react';
 
 interface MeterReadingsProps {
   mainMeter: MeterReading;
@@ -29,12 +29,16 @@ const MeterReadings: React.FC<MeterReadingsProps> = ({ mainMeter, onMainMeterUpd
     onUpdate([...readings, { id: newId, name: 'New User', meterNo: nextMeterNo, previous: 0, current: 0 }]);
   };
 
+  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    e.target.select();
+  };
+
   const totalUnits = readings.reduce((sum, r) => sum + (r.current - r.previous), 0);
   const mainMeterUnits = Math.max(0, mainMeter.current - mainMeter.previous);
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-6 print-break-inside-avoid">
-      <div className="flex items-center justify-between mb-4 sm:mb-6 border-b border-slate-100 pb-4">
+    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 print-break-inside-avoid">
+      <div className="flex items-center justify-between mb-6 border-b border-slate-100 pb-4">
         <div className="flex items-center gap-2">
           <Users className="w-5 h-5 text-indigo-600" />
           <h2 className="text-lg font-semibold text-slate-800">Meter Readings</h2>
@@ -47,152 +51,161 @@ const MeterReadings: React.FC<MeterReadingsProps> = ({ mainMeter, onMainMeterUpd
         </button>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
-          <thead className="text-[10px] sm:text-xs text-slate-500 uppercase bg-slate-50/50">
-            <tr>
-              <th className="pl-2 pr-1 py-2 sm:px-4 sm:py-3 font-medium rounded-l-lg w-1/4 sm:w-auto">Name</th>
-              <th className="hidden sm:table-cell px-4 py-3 font-medium">Meter No</th>
-              <th className="px-1 py-2 sm:px-4 sm:py-3 font-medium text-right w-[15%] sm:w-auto">Prev</th>
-              <th className="px-1 py-2 sm:px-4 sm:py-3 font-medium text-right w-[15%] sm:w-auto">Curr</th>
-              <th className="px-1 py-2 sm:px-4 sm:py-3 font-medium text-right w-[15%] sm:w-auto">Unit</th>
-              <th className="pl-1 pr-2 py-2 sm:px-4 sm:py-3 font-medium text-center no-print rounded-r-lg w-[10%] sm:w-auto"></th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100 text-xs sm:text-sm">
-            {/* Main Meter Row */}
-            <tr className="bg-indigo-50/30">
-              <td className="pl-2 pr-1 py-2 sm:px-4 sm:py-2">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-                   <div className="flex items-center gap-1">
-                     <Lock className="w-3 h-3 text-slate-400" />
-                     <span className="font-semibold text-slate-900">Main</span>
-                   </div>
-                   {/* Mobile Meter No Input */}
-                   <input
-                      type="text"
-                      value={mainMeter.meterNo}
-                      onChange={(e) => handleMainMeterChange('meterNo', e.target.value)}
-                      className="sm:hidden w-full bg-transparent border-b border-dashed border-slate-300 text-[10px] text-slate-500 p-0 focus:ring-0 focus:border-indigo-300"
-                      placeholder="#"
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {/* Main Meter Card */}
+        <div className="bg-indigo-50/40 p-4 rounded-xl border border-indigo-100 hover:border-indigo-200 transition-colors relative group shadow-sm">
+           {/* Card Header */}
+           <div className="flex justify-between items-center mb-4">
+              <div className="flex items-center gap-2">
+                 <div className="bg-indigo-100 p-1.5 rounded-lg">
+                    <Lock className="w-4 h-4 text-indigo-600" />
+                 </div>
+                 <span className="font-bold text-slate-900 text-sm uppercase">Main Meter</span>
+              </div>
+              <div className="flex items-center gap-1 bg-white px-2 py-1 rounded-md border border-indigo-100 shadow-sm">
+                 <Zap className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                 <span className="text-xs font-bold text-slate-900">{mainMeterUnits}</span>
+              </div>
+           </div>
+           
+           {/* Inputs Grid */}
+           <div className="space-y-3">
+              {/* Meter No */}
+              <div>
+                 <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1 flex items-center gap-1">
+                    Meter No <Hash className="w-3 h-3" />
+                 </label>
+                 <input
+                    type="text"
+                    value={mainMeter.meterNo}
+                    onChange={(e) => handleMainMeterChange('meterNo', e.target.value)}
+                    onFocus={handleFocus}
+                    className="w-full rounded-lg border-indigo-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm bg-white text-slate-900"
+                    placeholder="#"
+                 />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                 <div>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1 flex items-center gap-1">
+                       Previous <History className="w-3 h-3" />
+                    </label>
+                    <input
+                       type="number"
+                       value={mainMeter.previous}
+                       onChange={(e) => handleMainMeterChange('previous', parseFloat(e.target.value) || 0)}
+                       onFocus={handleFocus}
+                       className="w-full rounded-lg border-indigo-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm bg-white text-slate-900 text-right font-medium"
                     />
-                </div>
-              </td>
-              <td className="hidden sm:table-cell px-4 py-2">
-                <input
-                  type="text"
-                  value={mainMeter.meterNo}
-                  onChange={(e) => handleMainMeterChange('meterNo', e.target.value)}
-                  className="w-full bg-transparent border-none focus:ring-0 text-slate-600 p-0"
-                />
-              </td>
-              <td className="px-1 py-2 sm:px-4 sm:py-2">
-                <input
-                  type="number"
-                  value={mainMeter.previous}
-                  onChange={(e) => handleMainMeterChange('previous', parseFloat(e.target.value) || 0)}
-                  className="w-full text-right bg-transparent border-b border-indigo-200 focus:border-indigo-500 focus:ring-0 p-1"
-                />
-              </td>
-              <td className="px-1 py-2 sm:px-4 sm:py-2">
-                <input
-                  type="number"
-                  value={mainMeter.current}
-                  onChange={(e) => handleMainMeterChange('current', parseFloat(e.target.value) || 0)}
-                  className="w-full text-right bg-transparent border-b border-indigo-200 focus:border-indigo-500 focus:ring-0 p-1 font-medium"
-                />
-              </td>
-              <td className="px-1 py-2 sm:px-4 sm:py-2 text-right">
-                <span className="inline-flex items-center px-1.5 sm:px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-bold bg-indigo-100 text-indigo-800">
-                  {mainMeterUnits}
-                </span>
-              </td>
-              <td className="pl-1 pr-2 py-2 sm:px-4 sm:py-2 text-center no-print">
-                 {/* No delete for main meter */}
-              </td>
-            </tr>
+                 </div>
+                 <div>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1 flex items-center gap-1">
+                       Current <Gauge className="w-3 h-3" />
+                    </label>
+                    <input
+                       type="number"
+                       value={mainMeter.current}
+                       onChange={(e) => handleMainMeterChange('current', parseFloat(e.target.value) || 0)}
+                       onFocus={handleFocus}
+                       className="w-full rounded-lg border-indigo-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm bg-white text-slate-900 font-bold text-right"
+                    />
+                 </div>
+              </div>
+           </div>
+        </div>
 
-            {/* Separator Row (Optional) */}
-            <tr><td colSpan={6} className="h-1 sm:h-2 bg-transparent"></td></tr>
-
-            {/* Sub Meters */}
-            {readings.map((reading) => {
-              const units = Math.max(0, reading.current - reading.previous);
-              return (
-                <tr key={reading.id} className="group hover:bg-slate-50/80 transition-colors">
-                  <td className="pl-2 pr-1 py-2 sm:px-4 sm:py-2 align-top sm:align-middle">
-                    <input
-                      type="text"
-                      value={reading.name}
-                      onChange={(e) => handleChange(reading.id, 'name', e.target.value)}
-                      className="w-full bg-transparent border-none focus:ring-0 font-medium text-slate-900 placeholder-slate-400 p-0 text-xs sm:text-sm"
-                      placeholder="Name"
-                    />
-                    {/* Mobile Meter No Input */}
-                    <input
-                      type="text"
-                      value={reading.meterNo}
-                      onChange={(e) => handleChange(reading.id, 'meterNo', e.target.value)}
-                      className="sm:hidden w-full bg-transparent border-b border-slate-100 text-[10px] text-slate-400 p-0 mt-0.5 focus:ring-0 focus:border-indigo-300 placeholder-slate-300"
-                      placeholder="Meter No"
-                    />
-                  </td>
-                  <td className="hidden sm:table-cell px-4 py-2">
-                    <input
-                      type="text"
-                      value={reading.meterNo}
-                      onChange={(e) => handleChange(reading.id, 'meterNo', e.target.value)}
-                      className="w-full bg-transparent border-none focus:ring-0 text-slate-600 p-0"
-                    />
-                  </td>
-                  <td className="px-1 py-2 sm:px-4 sm:py-2 align-top sm:align-middle">
-                    <input
-                      type="number"
-                      value={reading.previous}
-                      onChange={(e) => handleChange(reading.id, 'previous', parseFloat(e.target.value) || 0)}
-                      className="w-full text-right bg-transparent border-b border-transparent focus:border-indigo-300 focus:ring-0 p-1"
-                    />
-                  </td>
-                  <td className="px-1 py-2 sm:px-4 sm:py-2 align-top sm:align-middle">
-                    <input
-                      type="number"
-                      value={reading.current}
-                      onChange={(e) => handleChange(reading.id, 'current', parseFloat(e.target.value) || 0)}
-                      className="w-full text-right bg-transparent border-b border-transparent focus:border-indigo-300 focus:ring-0 p-1 font-medium"
-                    />
-                  </td>
-                  <td className="px-1 py-2 sm:px-4 sm:py-2 text-right align-top sm:align-middle">
-                    <span className={`inline-flex items-center px-1.5 sm:px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-medium ${units > 100 ? 'bg-orange-100 text-orange-800' : 'bg-green-100 text-green-800'}`}>
-                      {units}
-                    </span>
-                  </td>
-                  <td className="pl-1 pr-2 py-2 sm:px-4 sm:py-2 text-center no-print align-top sm:align-middle">
-                    <button
+        {/* Sub Meter Cards */}
+        {readings.map((reading) => {
+             const units = Math.max(0, reading.current - reading.previous);
+             return (
+               <div key={reading.id} className="bg-slate-50 p-4 rounded-xl border border-slate-100 hover:border-indigo-200 transition-colors relative group shadow-sm hover:shadow-md">
+                  {/* Remove Button (Absolute top right) */}
+                  <button
                       onClick={() => handleRemove(reading.id)}
-                      className="text-slate-400 hover:text-red-500 transition-colors p-1"
+                      className="absolute top-3 right-3 text-slate-300 hover:text-red-500 transition-colors p-1 opacity-0 group-hover:opacity-100 focus:opacity-100"
                       title="Remove meter"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-          <tfoot className="bg-slate-50 font-semibold text-slate-900 border-t border-slate-200 text-xs sm:text-sm">
-            <tr>
-              <td colSpan={3} className="pl-2 pr-1 py-3 sm:px-4 text-right uppercase tracking-wider hidden sm:table-cell">Total Units (Users)</td>
-              <td colSpan={3} className="pl-2 pr-1 py-3 sm:px-4 text-right uppercase tracking-wider sm:hidden">Total</td>
-              <td className="px-1 py-3 sm:px-4 text-right">
-                <div className="flex items-center justify-end gap-1">
-                  <Zap className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-500 fill-yellow-500" />
-                  {totalUnits}
-                </div>
-              </td>
-              <td className="no-print"></td>
-            </tr>
-          </tfoot>
-        </table>
+
+                  {/* Header: Name Input */}
+                  <div className="mb-4 pr-6">
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1 flex items-center gap-1">
+                        User Name <Users className="w-3 h-3" />
+                      </label>
+                      <input
+                        type="text"
+                        value={reading.name}
+                        onChange={(e) => handleChange(reading.id, 'name', e.target.value)}
+                        onFocus={handleFocus}
+                        className="w-full rounded-lg border-slate-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm font-bold text-slate-900 bg-white"
+                        placeholder="Name"
+                      />
+                  </div>
+                  
+                  {/* Inputs Grid */}
+                  <div className="space-y-3">
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1 flex items-center gap-1">
+                            Meter No <Hash className="w-3 h-3" />
+                        </label>
+                        <input
+                            type="text"
+                            value={reading.meterNo}
+                            onChange={(e) => handleChange(reading.id, 'meterNo', e.target.value)}
+                            onFocus={handleFocus}
+                            className="w-full rounded-lg border-slate-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm bg-white text-slate-900"
+                            placeholder="#"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1 flex items-center gap-1">
+                                Previous <History className="w-3 h-3" />
+                            </label>
+                            <input
+                                type="number"
+                                value={reading.previous}
+                                onChange={(e) => handleChange(reading.id, 'previous', parseFloat(e.target.value) || 0)}
+                                onFocus={handleFocus}
+                                className="w-full rounded-lg border-slate-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm bg-white text-slate-900 text-right font-medium"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1 flex items-center gap-1">
+                                Current <Gauge className="w-3 h-3" />
+                            </label>
+                            <input
+                                type="number"
+                                value={reading.current}
+                                onChange={(e) => handleChange(reading.id, 'current', parseFloat(e.target.value) || 0)}
+                                onFocus={handleFocus}
+                                className="w-full rounded-lg border-slate-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm bg-white text-slate-900 font-bold text-right"
+                            />
+                        </div>
+                      </div>
+                  </div>
+
+                  {/* Footer Stats */}
+                  <div className="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center">
+                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Consumption</span>
+                     <div className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs font-bold ${units > 100 ? 'bg-orange-50 text-orange-700' : 'bg-green-50 text-green-700'}`}>
+                        {units} <span className="text-[10px] font-normal opacity-80">kWh</span>
+                     </div>
+                  </div>
+               </div>
+             );
+        })}
+
+        {/* Total Summary Card */}
+        <div className="col-span-1 md:col-span-2 lg:col-span-3 bg-slate-900 p-4 rounded-xl text-white flex justify-between items-center shadow-md">
+            <div className="flex items-center gap-2">
+                <Zap className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                <span className="font-bold text-sm uppercase tracking-wider">Total User Units</span>
+            </div>
+            <div className="text-2xl font-bold font-mono">
+                {totalUnits} <span className="text-sm font-normal text-slate-400">kWh</span>
+            </div>
+        </div>
       </div>
     </div>
   );
