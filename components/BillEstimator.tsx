@@ -102,7 +102,7 @@ const BillEstimator: React.FC = () => {
               
               slabSubSteps.push({
                   label: `Step 2${String.fromCharCode(97 + i)}: Test Slab ${stepBase.slabIndex}`,
-                  text: `Subtract the cost of the full slab from your Energy Cost.`,
+                  text: `Subtract the cost of the first full slab from your Energy Cost.`,
                   calculation: `${stepBase.startCost.toFixed(2)} - ${maxCostForSlab.toFixed(2)} = ${remainingCost.toFixed(2)}`,
                   note: `Since remaining cost (${remainingCost.toFixed(2)}) is > 0, consumption is over ${slab.limit} units.`
               });
@@ -113,7 +113,7 @@ const BillEstimator: React.FC = () => {
               
               slabSubSteps.push({
                   label: `Step 2${String.fromCharCode(97 + i)}: Calculate Units in Final Slab (Slab ${stepBase.slabIndex})`,
-                  text: `The remaining cost (${stepBase.startCost.toFixed(2)}) must be in the current slab (Rate: ${slab.rate}). Divide cost by rate.`,
+                  text: `The remaining cost (${stepBase.startCost.toFixed(2)}) must be the cost generated in this slab (Rate: ${slab.rate}). Divide cost by rate.`,
                   calculation: `${stepBase.startCost.toFixed(2)} / ${slab.rate} = ${unitsInSlab.toFixed(2)} units`
               });
               
@@ -145,7 +145,7 @@ const BillEstimator: React.FC = () => {
     // Section 2
     logicSteps.push({
         title: "2. ⚡ Reverse the Tiered Rate Calculation (The Hard Part)",
-        description: "Now you know the VAT-Exclusive Energy Cost is " + energyCost.toFixed(2) + ". You must now figure out how many units generated this cost, working backward through the slabs.",
+        description: `Now you know the VAT-Exclusive Energy Cost is ${energyCost.toFixed(2)}. You must now figure out how many units generated this cost, working backward through the slabs.`,
         tableHeader: true,
         subSteps: slabSubSteps
     });
@@ -221,7 +221,7 @@ const BillEstimator: React.FC = () => {
                 onChange={(e) => setUnits(e.target.value === '' ? '' : parseFloat(e.target.value))}
                 onFocus={handleFocus}
                 placeholder="e.g. 205"
-                className="w-full rounded-lg border-slate-200 focus:border-indigo-500 focus:ring-indigo-500 text-lg font-bold text-slate-900 pr-12"
+                className="w-full rounded-lg border-slate-200 focus:border-indigo-500 focus:ring-indigo-500 text-lg font-bold text-slate-900 pr-12 bg-white"
               />
               <span className="absolute right-4 top-3 text-sm text-slate-400 font-medium pointer-events-none">kWh</span>
             </div>
@@ -287,7 +287,7 @@ const BillEstimator: React.FC = () => {
                 onChange={(e) => setTargetBill(e.target.value === '' ? '' : parseFloat(e.target.value))}
                 onFocus={handleFocus}
                 placeholder="e.g. 1497.77"
-                className="w-full rounded-lg border-slate-200 focus:border-indigo-500 focus:ring-indigo-500 text-lg font-bold text-slate-900 pr-12"
+                className="w-full rounded-lg border-slate-200 focus:border-indigo-500 focus:ring-indigo-500 text-lg font-bold text-slate-900 pr-12 bg-white"
               />
               <span className="absolute right-4 top-3 text-sm text-slate-400 font-medium pointer-events-none">BDT</span>
             </div>
@@ -295,8 +295,8 @@ const BillEstimator: React.FC = () => {
 
           {/* Intro Text */}
           <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 text-sm text-slate-600 space-y-2">
-            <p className="font-medium text-slate-800">estimated unit uses</p>
-            <p>
+            <p className="font-medium text-slate-800 uppercase tracking-wide text-xs">estimated unit uses</p>
+            <p className="text-sm">
               This is one of the most complex reverse calculations in utility billing because you are dealing with tiered rates.
               When you know the total bill and need to find the units, you must reverse every step we just performed. This calculation cannot be done with a single formula; it requires a systematic, step-by-step reversal, often involving trial and error or iteration, because the rate per unit depends on the unknown total number of units.
             </p>
@@ -304,6 +304,24 @@ const BillEstimator: React.FC = () => {
 
           {(typeof targetBill === 'number' && targetBill > 0) ? (
             <>
+               {/* Component Table */}
+               <div className="overflow-x-auto rounded-lg border border-slate-200">
+                  <table className="w-full text-sm text-left">
+                    <thead className="bg-slate-100 text-slate-700 font-semibold text-xs uppercase">
+                      <tr>
+                        <th className="p-3 border-b border-slate-200">Component</th>
+                        <th className="p-3 border-b border-slate-200">Value</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-slate-700 bg-white">
+                      <tr><td className="p-3">Total Payable Bill</td><td className="p-3 font-medium">{targetBill.toFixed(2)}</td></tr>
+                      <tr><td className="p-3">Fixed Charges (Demand + Rent)</td><td className="p-3 font-medium">{(DEMAND_CHARGE + METER_RENT).toFixed(2)}</td></tr>
+                      <tr><td className="p-3">VAT Rate</td><td className="p-3 font-medium">5% or 0.05</td></tr>
+                      <tr><td className="p-3">Slab Rates</td><td className="p-3 font-medium">{SLABS.map(s => s.rate).join(', ')}</td></tr>
+                    </tbody>
+                  </table>
+               </div>
+
                {/* Big Result */}
                <div className="bg-indigo-50 rounded-xl p-5 border border-indigo-100 text-center">
                   <div className="text-xs text-indigo-600 uppercase font-bold tracking-wider mb-1">Estimated Unit Consumption</div>
@@ -317,21 +335,21 @@ const BillEstimator: React.FC = () => {
                  {reverseResult.logicSteps.map((step, idx) => (
                     <div key={idx} className="space-y-3">
                        <h4 className="text-sm font-bold text-slate-900 border-b border-slate-200 pb-2">{step.title}</h4>
-                       <p className="text-xs text-slate-500 italic">{step.description}</p>
+                       <p className="text-xs text-slate-500 italic leading-relaxed">{step.description}</p>
                        
-                       {/* Optional Table Header for Slabs section */}
+                       {/* Table for Slabs section */}
                        {step.tableHeader && (
-                         <div className="overflow-x-auto mb-2">
+                         <div className="overflow-x-auto mb-2 rounded border border-slate-200">
                            <table className="w-full text-xs text-left">
-                             <thead className="bg-slate-100 text-slate-500">
+                             <thead className="bg-slate-100 text-slate-500 font-medium">
                                <tr>
-                                 <th className="p-2">Slab Range</th>
-                                 <th className="p-2">Units in Slab</th>
-                                 <th className="p-2">Rate</th>
-                                 <th className="p-2">Cost for Full Slab</th>
+                                 <th className="p-2 border-b">Slab Range</th>
+                                 <th className="p-2 border-b">Units in Slab</th>
+                                 <th className="p-2 border-b">Rate</th>
+                                 <th className="p-2 border-b">Cost for Full Slab</th>
                                </tr>
                              </thead>
-                             <tbody className="divide-y divide-slate-100 text-slate-700">
+                             <tbody className="divide-y divide-slate-100 text-slate-700 bg-white">
                                {SLABS.map((s, i) => {
                                  const prev = i === 0 ? 0 : SLABS[i-1].limit;
                                  const size = s.limit - prev;
@@ -355,7 +373,7 @@ const BillEstimator: React.FC = () => {
                              <div key={sIdx} className="bg-white p-3 rounded-lg border border-slate-100 shadow-sm">
                                 <div className="text-xs font-bold text-indigo-700 mb-1">{sub.label}</div>
                                 <div className="text-sm text-slate-700 mb-2">{sub.text}</div>
-                                <div className="bg-slate-50 p-2 rounded text-xs font-mono text-slate-600 border border-slate-200">
+                                <div className="bg-slate-50 p-2 rounded text-xs font-mono text-slate-600 border border-slate-200 whitespace-pre-wrap">
                                    {sub.calculation}
                                 </div>
                                 {sub.note && (
@@ -370,12 +388,12 @@ const BillEstimator: React.FC = () => {
                  ))}
                </div>
                
-               <div className="bg-green-50 p-3 rounded-md border border-green-100 text-xs text-green-800 font-medium">
-                  Key Takeaway: If the price system uses tiered rates, you must reverse the fixed and VAT charges first, then work backward through the tiers to find which slab the final consumption fell into.
+               <div className="bg-green-50 p-4 rounded-lg border border-green-100 text-xs text-green-800 font-medium leading-relaxed">
+                  <strong>Key Takeaway:</strong> If the price system uses tiered rates, you must reverse the fixed and VAT charges first, then work backward through the tiers to find which slab the final consumption fell into.
                </div>
             </>
           ) : (
-            <div className="text-center py-8 text-slate-400 text-sm">
+            <div className="text-center py-8 text-slate-400 text-sm bg-slate-50 rounded-lg border border-dashed border-slate-200">
               Enter a bill amount to see the estimated units breakdown.
             </div>
           )}

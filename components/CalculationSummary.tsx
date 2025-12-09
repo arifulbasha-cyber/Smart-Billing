@@ -222,8 +222,8 @@ const CalculationSummary: React.FC<CalculationSummaryProps> = ({ result, config,
                            </tr>
                         );
                      })}
-                     <tr className="bg-slate-800 font-bold text-white border-t border-slate-700 print:bg-slate-800 print:text-white print:border-slate-800 h-12 leading-none">
-                        <td colSpan={4} className="px-4 text-right uppercase text-xs tracking-wider text-slate-300 whitespace-nowrap align-middle" style={{ verticalAlign: 'middle' }}>Total Units</td>
+                     <tr className="bg-slate-50 font-bold text-slate-900 border-t-2 border-slate-200 print:bg-slate-50 print:text-slate-900 print:border-slate-300 h-12 leading-none">
+                        <td colSpan={4} className="px-4 text-right uppercase text-xs tracking-wider text-slate-600 whitespace-nowrap align-middle" style={{ verticalAlign: 'middle' }}>Total Units</td>
                         <td className="px-4 text-right align-middle py-3" style={{ verticalAlign: 'middle' }}>
                            {result.totalUnits}
                         </td>
@@ -257,11 +257,11 @@ const CalculationSummary: React.FC<CalculationSummaryProps> = ({ result, config,
                            <td className="px-4 py-2 text-right font-bold text-indigo-700 text-base print:text-black">{Math.round(user.totalPayable)}</td>
                         </tr>
                      ))}
-                     <tr className="bg-slate-800 font-bold text-white border-t border-slate-700 print:bg-slate-800 print:text-white print:border-slate-800 h-12 leading-none">
+                     <tr className="bg-slate-900 font-bold text-white border-t-2 border-slate-800 print:bg-slate-50 print:text-slate-900 print:border-slate-300 h-12 leading-none">
                         <td colSpan={4} className="px-4 text-right uppercase text-xs tracking-wider text-slate-300 whitespace-nowrap align-middle" style={{ verticalAlign: 'middle' }}>
                             Total Collection
                         </td>
-                        <td className="px-4 text-right text-white print:text-white align-middle py-3" style={{ verticalAlign: 'middle' }}>{Math.round(result.totalCollection)}</td>
+                        <td className="px-4 text-right text-emerald-400 print:text-slate-900 align-middle py-3" style={{ verticalAlign: 'middle' }}>{Math.round(result.totalCollection)}</td>
                      </tr>
                   </tbody>
                </table>

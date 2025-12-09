@@ -33,7 +33,7 @@ const BillConfiguration: React.FC<BillConfigurationProps> = ({ config, onChange 
             <select
               value={config.month}
               onChange={handleChange('month')}
-              className="w-full rounded-lg border-slate-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm bg-white"
+              className="w-full rounded-lg border-slate-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm bg-white text-slate-900"
             >
               {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map(m => (
                 <option key={m} value={m}>{m}</option>
@@ -48,7 +48,7 @@ const BillConfiguration: React.FC<BillConfigurationProps> = ({ config, onChange 
               type="date"
               value={config.dateGenerated}
               onChange={handleChange('dateGenerated')}
-              className="w-full rounded-lg border-slate-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm bg-white"
+              className="w-full rounded-lg border-slate-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm bg-white text-slate-900"
             />
           </div>
         </div>
@@ -65,7 +65,7 @@ const BillConfiguration: React.FC<BillConfigurationProps> = ({ config, onChange 
               value={config.totalBillPayable}
               onChange={handleChange('totalBillPayable')}
               onFocus={handleFocus}
-              className="w-full rounded-lg border-slate-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm font-bold text-slate-900 pr-8"
+              className="w-full rounded-lg border-slate-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm font-bold text-slate-900 pr-8 bg-white"
             />
             <span className="absolute right-3 top-2.5 text-xs text-slate-400 font-medium pointer-events-none">BDT</span>
           </div>
@@ -82,7 +82,7 @@ const BillConfiguration: React.FC<BillConfigurationProps> = ({ config, onChange 
             value={config.demandCharge}
             onChange={handleChange('demandCharge')}
             onFocus={handleFocus}
-            className="w-full rounded-lg border-slate-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+            className="w-full rounded-lg border-slate-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm bg-white text-slate-900"
           />
         </div>
 
@@ -97,7 +97,7 @@ const BillConfiguration: React.FC<BillConfigurationProps> = ({ config, onChange 
             value={config.meterRent}
             onChange={handleChange('meterRent')}
             onFocus={handleFocus}
-            className="w-full rounded-lg border-slate-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+            className="w-full rounded-lg border-slate-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm bg-white text-slate-900"
           />
         </div>
 
@@ -112,7 +112,7 @@ const BillConfiguration: React.FC<BillConfigurationProps> = ({ config, onChange 
             value={config.vat}
             onChange={handleChange('vat')}
             onFocus={handleFocus}
-            className="w-full rounded-lg border-slate-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+            className="w-full rounded-lg border-slate-200 focus:border-indigo-500 focus:ring-indigo-500 text-sm bg-white text-slate-900"
           />
         </div>
 
