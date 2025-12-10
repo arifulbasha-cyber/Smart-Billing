@@ -6,7 +6,7 @@ export const INITIAL_CONFIG = {
   dateGenerated: new Date().toISOString().split('T')[0],
   totalBillPayable: 1497,
   bkashFee: 0,
-  lateFee: 0,
+  includeLateFee: false,
 };
 
 export const INITIAL_MAIN_METER: MeterReading = {

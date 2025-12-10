@@ -51,8 +51,39 @@ const AppContent: React.FC = () => {
     }
   };
 
-  const handleConfigChange = (key: keyof BillConfig, value: string | number) => {
+  const handleConfigChange = (key: keyof BillConfig, value: string | number | boolean) => {
     setConfig(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleNextMonth = () => {
+    if (!window.confirm(t('confirm_next_month'))) return;
+
+    // 1. Calculate Next Month
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const currentMonthIndex = months.indexOf(config.month);
+    const nextMonth = months[(currentMonthIndex + 1) % 12];
+
+    // 2. Update Config
+    setConfig(prev => ({
+      ...prev,
+      month: nextMonth,
+      dateGenerated: new Date().toISOString().split('T')[0], // Today's date
+      totalBillPayable: 0 // Optional: Reset total bill as it will be different
+    }));
+
+    // 3. Update Main Meter: Current becomes Previous, New Current resets to match Previous (0 consumption)
+    setMainMeter(prev => ({
+      ...prev,
+      previous: prev.current,
+      current: prev.current
+    }));
+
+    // 4. Update Sub Meters: Current becomes Previous, New Current resets to match Previous
+    setMeters(prev => prev.map(m => ({
+      ...m,
+      previous: m.current,
+      current: m.current
+    })));
   };
 
   // History Actions
@@ -73,13 +104,18 @@ const AppContent: React.FC = () => {
 
   const loadFromHistory = (record: SavedBill) => {
     if (window.confirm(t('confirm_load').replace('{month}', record.config.month))) {
-      // Create a clean config object from the saved record, omitting old properties if present
+      // Handle legacy records where lateFee might be a number
+      const legacyConfig = record.config as any;
+      const includeLateFee = legacyConfig.includeLateFee !== undefined 
+          ? legacyConfig.includeLateFee 
+          : (legacyConfig.lateFee && legacyConfig.lateFee > 0);
+
       const cleanConfig: BillConfig = {
         month: record.config.month,
         dateGenerated: record.config.dateGenerated,
         totalBillPayable: record.config.totalBillPayable,
         bkashFee: record.config.bkashFee,
-        lateFee: record.config.lateFee || 0
+        includeLateFee: includeLateFee
       };
       setConfig(cleanConfig);
       setMainMeter(record.mainMeter);
@@ -114,6 +150,9 @@ const AppContent: React.FC = () => {
     // This assumes the Total Bill includes the VAT.
     const vatTotal = (config.totalBillPayable * VAT_RATE) / (1 + VAT_RATE);
 
+    // Calculate Late Fee based on VAT Total if selected
+    const lateFee = config.includeLateFee ? vatTotal : 0;
+
     // 1. Calculate Fixed VAT
     // Formula: (Demand Charge + Meter Rent) * 5%
     const vatFixed = (DEMAND_CHARGE + METER_RENT) * VAT_RATE;
@@ -141,7 +180,6 @@ const AppContent: React.FC = () => {
     // 5. Fixed Cost Per User
     // Formula: (Demand Charge + Meter Rent + VAT Fixed + bKash Fee + Late Fee) / N_users
     const numUsers = meters.length;
-    const lateFee = config.lateFee || 0;
     const totalFixedPool = DEMAND_CHARGE + METER_RENT + vatFixed + config.bkashFee + lateFee;
     const fixedCostPerUser = numUsers > 0 ? totalFixedPool / numUsers : 0;
 
@@ -168,6 +206,7 @@ const AppContent: React.FC = () => {
       vatFixed,
       vatDistributed,
       vatTotal,
+      lateFee,
       calculatedRate,
       totalUnits,
       userCalculations,
@@ -230,7 +269,11 @@ const AppContent: React.FC = () => {
               <h2 className="text-lg font-bold">{t('data_input_part')}</h2>
             </div>
             
-            <BillConfiguration config={config} onChange={handleConfigChange} />
+            <BillConfiguration 
+              config={config} 
+              onChange={handleConfigChange} 
+              onNextMonth={handleNextMonth} 
+            />
             
             <MeterReadings 
               mainMeter={mainMeter}
@@ -257,7 +300,7 @@ const AppContent: React.FC = () => {
               <h4 className="font-semibold mb-2">{t('how_calc')}</h4>
               <ul className="list-disc list-inside space-y-1 opacity-80 text-xs">
                  <li><strong>{t('vat_fixed')}:</strong> (Demand + Rent) × 5%</li>
-                 <li><strong>{t('vat_distributed')}:</strong> Calculated Total VAT - VAT Fixed</li>
+                 <li><strong>{t('vat_distributed')}:</strong> (Total Bill ÷ 1.05 - Fixed Charges) × 5%</li>
                  <li><strong>Rate/Unit:</strong> (Total Bill - Demand - Rent - VAT Fixed) ÷ Total Units</li>
                  <li><strong>Fixed Cost (User):</strong> (Demand + Rent + VAT Fixed + bKash + Late Fee) ÷ Users</li>
                  <li><strong>Payable:</strong> (Units × Rate) + Fixed Cost</li>

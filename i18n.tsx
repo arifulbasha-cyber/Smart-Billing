@@ -16,6 +16,8 @@ const translations: Record<Language, Record<string, string>> = {
     'install_app': 'Install App',
     'bill_month': 'Bill Month',
     'date_generated': 'Date Generated',
+    'next_month': 'Next Month',
+    'confirm_next_month': 'Start bill for the next month? Current readings will become previous readings.',
     
     // Config
     'data_input_part': 'Data Input Part',
@@ -141,6 +143,8 @@ const translations: Record<Language, Record<string, string>> = {
     'install_app': 'ইনস্টল অ্যাপ',
     'bill_month': 'বিলের মাস',
     'date_generated': 'তৈরির তারিখ',
+    'next_month': 'পরবর্তী মাস',
+    'confirm_next_month': 'পরবর্তী মাসের বিল শুরু করবেন? বর্তমান রিডিং পূর্ববর্তী রিডিং হয়ে যাবে।',
 
     // Config
     'data_input_part': 'ডেটা ইনপুট অংশ',
@@ -150,7 +154,7 @@ const translations: Record<Language, Record<string, string>> = {
     'meter_rent': 'মিটার ভাড়া',
     'vat_total': 'ভ্যাট (মোট)',
     'bkash_fee': 'বিকাশ ফি',
-    'late_fee': 'বিলম্ব ফি',
+    'late_fee': 'বিলম্ব মাশুল',
     'bdt': 'টাকা',
 
     // Meter Readings

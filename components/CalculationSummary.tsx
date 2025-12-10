@@ -194,7 +194,7 @@ const CalculationSummary: React.FC<CalculationSummaryProps> = ({ result, config,
                         <span className="text-slate-600">{t('vat_total')}</span>
                         <span className="text-[10px] text-slate-400 italic font-normal print:text-[9px] hidden sm:inline">{t('vat_desc_1')}</span>
                     </div>
-                    <span className="font-medium text-slate-900">{result.vatTotal.toFixed(2)}</span>
+                    <span className="font-medium text-slate-900">{Math.round(result.vatTotal)}</span>
                  </div>
                  <div className="flex justify-between items-baseline">
                     <div className="flex items-baseline gap-2">
@@ -216,7 +216,7 @@ const CalculationSummary: React.FC<CalculationSummaryProps> = ({ result, config,
                  </div>
                  <div className="flex justify-between items-baseline">
                     <span className="text-slate-600">{t('late_fee')}</span>
-                    <span className="font-medium text-slate-900">{config.lateFee || '-'}</span>
+                    <span className="font-medium text-slate-900">{result.lateFee > 0 ? Math.round(result.lateFee) : '-'}</span>
                  </div>
              </div>
           </div>

@@ -4,7 +4,7 @@ export interface BillConfig {
   dateGenerated: string;
   totalBillPayable: number;
   bkashFee: number;
-  lateFee: number;
+  includeLateFee: boolean;
 }
 
 export interface MeterReading {
@@ -28,6 +28,7 @@ export interface BillCalculationResult {
   vatFixed: number;
   vatDistributed: number;
   vatTotal: number;
+  lateFee: number;
   calculatedRate: number;
   totalUnits: number;
   userCalculations: UserCalculation[];

@@ -1,15 +1,16 @@
 
 import React from 'react';
 import { BillConfig } from '../types';
-import { Settings, CreditCard, Banknote, Calendar, Clock } from 'lucide-react';
+import { Settings, CreditCard, Banknote, Calendar, Clock, CheckCircle2, Circle, ArrowRight } from 'lucide-react';
 import { useLanguage } from '../i18n';
 
 interface BillConfigurationProps {
   config: BillConfig;
-  onChange: (key: keyof BillConfig, value: string | number) => void;
+  onChange: (key: keyof BillConfig, value: string | number | boolean) => void;
+  onNextMonth: () => void;
 }
 
-const BillConfiguration: React.FC<BillConfigurationProps> = ({ config, onChange }) => {
+const BillConfiguration: React.FC<BillConfigurationProps> = ({ config, onChange, onNextMonth }) => {
   const { t } = useLanguage();
 
   const handleChange = (key: keyof BillConfig) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -18,15 +19,28 @@ const BillConfiguration: React.FC<BillConfigurationProps> = ({ config, onChange 
     onChange(key, val);
   };
 
+  const handleCheckboxChange = (key: keyof BillConfig) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    onChange(key, e.target.checked);
+  };
+
   const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
     e.target.select();
   };
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 print-break-inside-avoid">
-      <div className="flex items-center gap-2 mb-6 border-b border-slate-100 pb-4">
-        <Settings className="w-5 h-5 text-indigo-600" />
-        <h2 className="text-lg font-semibold text-slate-800">{t('costs_configuration')}</h2>
+      <div className="flex items-center justify-between mb-6 border-b border-slate-100 pb-4">
+        <div className="flex items-center gap-2">
+          <Settings className="w-5 h-5 text-indigo-600" />
+          <h2 className="text-lg font-semibold text-slate-800">{t('costs_configuration')}</h2>
+        </div>
+        <button
+          onClick={onNextMonth}
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-700 text-xs font-semibold rounded-lg hover:bg-indigo-100 transition-colors border border-indigo-100"
+          title={t('next_month')}
+        >
+          {t('next_month')} <ArrowRight className="w-3 h-3" />
+        </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -91,20 +105,21 @@ const BillConfiguration: React.FC<BillConfigurationProps> = ({ config, onChange 
           />
         </div>
 
-        {/* Late Fee */}
-        <div className="bg-orange-50/50 p-4 rounded-xl border border-orange-100 hover:border-orange-200 transition-colors">
-          <label className="block text-xs font-bold text-orange-600 uppercase mb-2 flex items-center gap-1">
+        {/* Late Fee Checkbox */}
+        <div className={`p-4 rounded-xl border transition-colors flex flex-col justify-center cursor-pointer ${config.includeLateFee ? 'bg-orange-50 border-orange-200' : 'bg-slate-50 border-slate-100'}`} onClick={() => onChange('includeLateFee', !config.includeLateFee)}>
+          <label className={`block text-xs font-bold uppercase mb-2 flex items-center gap-1 cursor-pointer ${config.includeLateFee ? 'text-orange-600' : 'text-slate-500'}`}>
             {t('late_fee')} <Clock className="w-3 h-3" />
           </label>
-          <input
-            type="number"
-            min="0"
-            value={config.lateFee}
-            onChange={handleChange('lateFee')}
-            onFocus={handleFocus}
-            placeholder="0"
-            className="w-full rounded-lg border-orange-200 focus:border-orange-500 focus:ring-orange-500 text-sm bg-white text-orange-700 font-medium"
-          />
+          <div className="flex items-center gap-2">
+             {config.includeLateFee ? (
+               <CheckCircle2 className="w-5 h-5 text-orange-500" />
+             ) : (
+               <Circle className="w-5 h-5 text-slate-300" />
+             )}
+             <span className={`text-sm font-medium ${config.includeLateFee ? 'text-orange-700' : 'text-slate-400'}`}>
+               {config.includeLateFee ? 'Included (= VAT Total)' : 'Not Applicable'}
+             </span>
+          </div>
         </div>
       </div>
     </div>
