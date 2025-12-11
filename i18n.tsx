@@ -86,6 +86,7 @@ const translations: Record<Language, Record<string, string>> = {
     'bkash_fee': 'bKash Fee',
     'late_fee': 'Late Fee',
     'bdt': 'BDT',
+    'scan_bill': 'Scan Bill',
 
     // Meter Readings
     'meter_readings': 'Meter Readings',
@@ -102,6 +103,13 @@ const translations: Record<Language, Record<string, string>> = {
     'no_meters_title': 'No Meters Added',
     'no_meters_desc': 'Add your first sub-meter to start calculating the bill split.',
     'add_first_meter': 'Add First Meter',
+    'approx_cost': 'Approx. Cost',
+    'swipe_hint': 'Swipe left to delete',
+    'prev_val': 'Prev:',
+    'negative_consumption': 'Negative Consumption',
+    'check_readings': 'Current reading is less than previous reading.',
+    'reset_readings': 'Reset',
+    'select_tenant': 'Select Tenant',
 
     // Stats
     'consumption_share': 'Consumption Share',
@@ -285,6 +293,7 @@ const translations: Record<Language, Record<string, string>> = {
     'bkash_fee': 'বিকাশ ফি',
     'late_fee': 'বিলম্ব মাশুল',
     'bdt': 'টাকা',
+    'scan_bill': 'বিল স্ক্যান',
 
     // Meter Readings
     'meter_readings': 'মিটার রিডিং',
@@ -301,6 +310,13 @@ const translations: Record<Language, Record<string, string>> = {
     'no_meters_title': 'কোনো মিটার যোগ করা হয়নি',
     'no_meters_desc': 'বিল স্প্লিট হিসাব শুরু করতে আপনার প্রথম সাব-মিটার যোগ করুন।',
     'add_first_meter': 'প্রথম মিটার যোগ করুন',
+    'approx_cost': 'আনুমানিক খরচ',
+    'swipe_hint': 'মুছতে বামে সোয়াইপ করুন',
+    'prev_val': 'পূর্ব:',
+    'negative_consumption': 'নেতিবাচক ব্যবহার',
+    'check_readings': 'বর্তমান রিডিং পূর্ববর্তী রিডিংয়ের চেয়ে কম।',
+    'reset_readings': 'রিসেট',
+    'select_tenant': 'ভাড়াটিয়া নির্বাচন',
 
     // Stats
     'consumption_share': 'ব্যবহারের ভাগ',

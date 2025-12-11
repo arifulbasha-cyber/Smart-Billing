@@ -364,64 +364,72 @@ const AppContent: React.FC = () => {
             <div className="relative">
               <button 
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors flex items-center gap-1"
+                className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors flex items-center gap-1 z-50 relative"
               >
                 <Menu className="w-6 h-6" />
                 <span className="text-sm font-semibold hidden sm:inline">{t('menu')}</span>
               </button>
 
-              {/* Dropdown Menu */}
+              {/* Dropdown Menu & Backdrop */}
               {isMenuOpen && (
-                <div className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-200 dark:border-slate-800 py-2 z-50 animate-in fade-in slide-in-from-top-2">
-                  <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800 mb-2">
-                    <div className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Actions</div>
-                  </div>
-                  
-                  <button onClick={() => { setActiveModal('stats'); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2">
-                    <PieChart className="w-4 h-4 text-purple-500" /> {t('consumption_share')}
-                  </button>
-                  <button onClick={() => { setActiveModal('trends'); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2">
-                    <BarChart3 className="w-4 h-4 text-blue-500" /> {t('trends')}
-                  </button>
-                  <button onClick={handleNextMonth} className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2">
-                    <ArrowRight className="w-4 h-4 text-green-500" /> {t('next_month')}
-                  </button>
-                  
-                  <div className="my-2 border-t border-slate-100 dark:border-slate-800"></div>
-                  
-                  <button onClick={() => { setActiveModal('tenants'); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2">
-                    <Users className="w-4 h-4 text-orange-500" /> {t('tenants')}
-                  </button>
-                  <button onClick={() => { setActiveModal('tariff'); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2">
-                    <Settings className="w-4 h-4 text-slate-500" /> {t('settings')}
-                  </button>
-                  
-                  <div className="my-2 border-t border-slate-100 dark:border-slate-800"></div>
+                <>
+                  {/* Backdrop to close menu on outside click */}
+                  <div 
+                    className="fixed inset-0 z-40 bg-transparent"
+                    onClick={() => setIsMenuOpen(false)}
+                  ></div>
 
-                  <div className="flex items-center justify-between px-4 py-2">
-                    <span className="text-sm text-slate-700 dark:text-slate-200">{theme === 'dark' ? t('dark_mode') : t('light_mode')}</span>
-                    <button onClick={toggleTheme} className="p-1.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-                      {theme === 'dark' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+                  <div className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-200 dark:border-slate-800 py-2 z-50 animate-in fade-in slide-in-from-top-2">
+                    <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800 mb-2">
+                      <div className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Actions</div>
+                    </div>
+                    
+                    <button onClick={() => { setActiveModal('stats'); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2">
+                      <PieChart className="w-4 h-4 text-purple-500" /> {t('consumption_share')}
                     </button>
-                  </div>
+                    <button onClick={() => { setActiveModal('trends'); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2">
+                      <BarChart3 className="w-4 h-4 text-blue-500" /> {t('trends')}
+                    </button>
+                    <button onClick={handleNextMonth} className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2">
+                      <ArrowRight className="w-4 h-4 text-green-500" /> {t('next_month')}
+                    </button>
+                    
+                    <div className="my-2 border-t border-slate-100 dark:border-slate-800"></div>
+                    
+                    <button onClick={() => { setActiveModal('tenants'); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2">
+                      <Users className="w-4 h-4 text-orange-500" /> {t('tenants')}
+                    </button>
+                    <button onClick={() => { setActiveModal('tariff'); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2">
+                      <Settings className="w-4 h-4 text-slate-500" /> {t('settings')}
+                    </button>
+                    
+                    <div className="my-2 border-t border-slate-100 dark:border-slate-800"></div>
 
-                  <div className="flex items-center justify-between px-4 py-2">
-                     <div className="flex rounded-md bg-slate-100 dark:bg-slate-800 p-0.5">
-                       <button onClick={() => setLanguage('en')} className={`px-2 py-0.5 text-xs font-bold rounded ${language === 'en' ? 'bg-white dark:bg-slate-600 shadow' : ''}`}>EN</button>
-                       <button onClick={() => setLanguage('bn')} className={`px-2 py-0.5 text-xs font-bold rounded ${language === 'bn' ? 'bg-white dark:bg-slate-600 shadow' : ''}`}>BN</button>
-                     </div>
-                  </div>
+                    <div className="flex items-center justify-between px-4 py-2">
+                      <span className="text-sm text-slate-700 dark:text-slate-200">{theme === 'dark' ? t('dark_mode') : t('light_mode')}</span>
+                      <button onClick={toggleTheme} className="p-1.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                        {theme === 'dark' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+                      </button>
+                    </div>
 
-                  {user ? (
-                     <button onClick={handleLogout} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2">
-                        <LogOut className="w-4 h-4" /> {t('logout')}
-                     </button>
-                  ) : (
-                     <button onClick={handleLogin} className="w-full text-left px-4 py-2 text-sm text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 flex items-center gap-2">
-                        <LogIn className="w-4 h-4" /> {t('login')} / {t('cloud_setup')}
-                     </button>
-                  )}
-                </div>
+                    <div className="flex items-center justify-between px-4 py-2">
+                       <div className="flex rounded-md bg-slate-100 dark:bg-slate-800 p-0.5">
+                         <button onClick={() => setLanguage('en')} className={`px-2 py-0.5 text-xs font-bold rounded ${language === 'en' ? 'bg-white dark:bg-slate-600 shadow' : ''}`}>EN</button>
+                         <button onClick={() => setLanguage('bn')} className={`px-2 py-0.5 text-xs font-bold rounded ${language === 'bn' ? 'bg-white dark:bg-slate-600 shadow' : ''}`}>BN</button>
+                       </div>
+                    </div>
+
+                    {user ? (
+                       <button onClick={handleLogout} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2">
+                          <LogOut className="w-4 h-4" /> {t('logout')}
+                       </button>
+                    ) : (
+                       <button onClick={handleLogin} className="w-full text-left px-4 py-2 text-sm text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 flex items-center gap-2">
+                          <LogIn className="w-4 h-4" /> {t('login')} / {t('cloud_setup')}
+                       </button>
+                    )}
+                  </div>
+                </>
               )}
             </div>
           </div>
@@ -449,6 +457,8 @@ const AppContent: React.FC = () => {
                      tenants={tenants} 
                      onManageTenants={() => setActiveModal('tenants')}
                      maxUnits={maxUserUnits}
+                     calculatedRate={calculationResult.calculatedRate}
+                     tariffConfig={tariffConfig}
                 />
               </div>
             )}
