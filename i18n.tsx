@@ -7,6 +7,9 @@ interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
   t: (key: string) => string;
+  formatNumber: (num: number | string) => string;
+  translateMonth: (month: string) => string;
+  formatDateLocalized: (dateStr: string) => string;
 }
 
 const translations: Record<Language, Record<string, string>> = {
@@ -100,6 +103,7 @@ const translations: Record<Language, Record<string, string>> = {
     'total_user_units': 'Total User Units',
     'total_units': 'Total Units',
     'remove_meter': 'Remove',
+    'confirm_delete_meter': 'Are you sure you want to remove this meter?',
     'no_meters_title': 'No Meters Added',
     'no_meters_desc': 'Add your first sub-meter to start calculating the bill split.',
     'add_first_meter': 'Add First Meter',
@@ -110,6 +114,9 @@ const translations: Record<Language, Record<string, string>> = {
     'check_readings': 'Current reading is less than previous reading.',
     'reset_readings': 'Reset',
     'select_tenant': 'Select Tenant',
+    'system_loss': 'System Loss / Common',
+    'reading_error': 'Excess Sub-metering',
+    'difference': 'Difference',
 
     // Stats
     'consumption_share': 'Consumption Share',
@@ -307,6 +314,7 @@ const translations: Record<Language, Record<string, string>> = {
     'total_user_units': 'মোট ব্যবহারকারী ইউনিট',
     'total_units': 'মোট ইউনিট',
     'remove_meter': 'মুছুন',
+    'confirm_delete_meter': 'আপনি কি নিশ্চিত যে আপনি এই মিটারটি সরাতে চান?',
     'no_meters_title': 'কোনো মিটার যোগ করা হয়নি',
     'no_meters_desc': 'বিল স্প্লিট হিসাব শুরু করতে আপনার প্রথম সাব-মিটার যোগ করুন।',
     'add_first_meter': 'প্রথম মিটার যোগ করুন',
@@ -317,6 +325,9 @@ const translations: Record<Language, Record<string, string>> = {
     'check_readings': 'বর্তমান রিডিং পূর্ববর্তী রিডিংয়ের চেয়ে কম।',
     'reset_readings': 'রিসেট',
     'select_tenant': 'ভাড়াটিয়া নির্বাচন',
+    'system_loss': 'সিস্টেম লস / সাধারণ',
+    'reading_error': 'সাব-মিটার বেশি',
+    'difference': 'পার্থক্য',
 
     // Stats
     'consumption_share': 'ব্যবহারের ভাগ',
@@ -414,6 +425,20 @@ const translations: Record<Language, Record<string, string>> = {
     'Anayet': 'এনায়েত',
     'Arif': 'আরিফ',
 
+    // Month Names
+    'January': 'জানুয়ারি',
+    'February': 'ফেব্রুয়ারি',
+    'March': 'মার্চ',
+    'April': 'এপ্রিল',
+    'May': 'মে',
+    'June': 'জুন',
+    'July': 'জুলাই',
+    'August': 'আগস্ট',
+    'September': 'সেপ্টেম্বর',
+    'October': 'অক্টোবর',
+    'November': 'নভেম্বর',
+    'December': 'ডিসেম্বর',
+
     // OCR
     'scan_meter': 'মিটার স্ক্যান',
     'capture': 'ছবি তুলুন',
@@ -435,8 +460,43 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
     return translations[language][key] || key;
   };
 
+  const formatNumber = (num: number | string): string => {
+    const str = num.toString();
+    if (language === 'bn') {
+      const map: Record<string, string> = {
+        '0': '০', '1': '১', '2': '২', '3': '৩', '4': '৪',
+        '5': '৫', '6': '৬', '7': '৭', '8': '৮', '9': '৯'
+      };
+      return str.replace(/\d/g, (d) => map[d]);
+    }
+    return str;
+  };
+
+  const translateMonth = (month: string): string => {
+    if (language === 'bn' && translations.bn[month]) {
+      return translations.bn[month];
+    }
+    return month;
+  };
+
+  const formatDateLocalized = (dateStr: string): string => {
+     if (!dateStr) return '';
+     const parts = dateStr.split('-');
+     if (parts.length !== 3) return dateStr;
+     const [year, month, day] = parts;
+     
+     // Remove leading zeros for cleanliness
+     const d = parseInt(day);
+     const m = parseInt(month);
+     
+     if (language === 'bn') {
+        return `${formatNumber(d)}/${formatNumber(m)}/${formatNumber(year.slice(-2))}`;
+     }
+     return `${d}/${m}/${year.slice(-2)}`;
+  };
+
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t }}>
+    <LanguageContext.Provider value={{ language, setLanguage, t, formatNumber, translateMonth, formatDateLocalized }}>
       {children}
     </LanguageContext.Provider>
   );

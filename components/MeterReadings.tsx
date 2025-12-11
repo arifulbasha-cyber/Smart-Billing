@@ -3,7 +3,6 @@ import React, { useState, useRef } from 'react';
 import { MeterReading, Tenant, TariffConfig } from '../types';
 import { Users, Trash2, Plus, Zap, Lock, ChevronDown, ChevronUp, AlertTriangle, Settings } from 'lucide-react';
 import { useLanguage } from '../i18n';
-import OCRModal from './OCRModal';
 
 interface MeterReadingsProps {
   mainMeter: MeterReading;
@@ -28,9 +27,7 @@ const MeterReadings: React.FC<MeterReadingsProps> = ({
   calculatedRate = 0,
   tariffConfig
 }) => {
-  const { t } = useLanguage();
-  const [isOCRModalOpen, setIsOCRModalOpen] = useState(false);
-  const [scanTarget, setScanTarget] = useState<{ id: string | 'main'; field: 'previous' | 'current' } | null>(null);
+  const { t, formatNumber } = useLanguage();
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
   
   // Swipe State
@@ -54,7 +51,9 @@ const MeterReadings: React.FC<MeterReadingsProps> = ({
   };
 
   const handleRemove = (id: string) => {
-    onUpdate(readings.filter(r => r.id !== id));
+    if (window.confirm(t('confirm_delete_meter'))) {
+      onUpdate(readings.filter(r => r.id !== id));
+    }
   };
 
   const handleAdd = () => {
@@ -68,15 +67,6 @@ const MeterReadings: React.FC<MeterReadingsProps> = ({
 
   const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
     e.target.select();
-  };
-
-  const handleScanResult = (value: number) => {
-    if (!scanTarget) return;
-    if (scanTarget.id === 'main') {
-      handleMainMeterChange(scanTarget.field, value);
-    } else {
-      handleChange(scanTarget.id, scanTarget.field, value);
-    }
   };
 
   // Swipe Handlers
@@ -117,6 +107,7 @@ const MeterReadings: React.FC<MeterReadingsProps> = ({
 
   const totalUnits = readings.reduce((sum, r) => sum + Math.max(0, r.current - r.previous), 0);
   const mainMeterUnits = Math.max(0, mainMeter.current - mainMeter.previous);
+  const diffUnits = mainMeterUnits - totalUnits;
 
   // SVG Gauge Calculator
   const gaugeAngle = Math.min(180, (mainMeterUnits / (maxUnits * 1.5 || 200)) * 180);
@@ -149,7 +140,7 @@ const MeterReadings: React.FC<MeterReadingsProps> = ({
                  </div>
                  <div>
                     <div className="font-bold text-sm uppercase tracking-wide text-slate-200">{t('main_meter')}</div>
-                    <div className="text-[10px] text-slate-400 font-mono">#{mainMeter.meterNo || '0000'}</div>
+                    <div className="text-[10px] text-slate-400 font-mono">#{formatNumber(mainMeter.meterNo || '0000')}</div>
                  </div>
               </div>
            </div>
@@ -184,7 +175,7 @@ const MeterReadings: React.FC<MeterReadingsProps> = ({
                        <path d="M 100 100 L 100 35" stroke="white" strokeWidth="2" strokeLinecap="round" />
                    </g>
                    {/* Text Value */}
-                   <text x="100" y="85" textAnchor="middle" fill="white" className="text-3xl font-bold font-mono">{mainMeterUnits}</text>
+                   <text x="100" y="85" textAnchor="middle" fill="white" className="text-3xl font-bold font-mono">{formatNumber(mainMeterUnits)}</text>
                    <text x="100" y="100" textAnchor="middle" fill="#94a3b8" className="text-[10px] uppercase font-bold tracking-widest">Units (kWh)</text>
                </svg>
            </div>
@@ -278,8 +269,8 @@ const MeterReadings: React.FC<MeterReadingsProps> = ({
                                 {isNegative ? <AlertTriangle className="w-4 h-4" /> : (reading.name ? reading.name.substring(0, 2).toUpperCase() : '??')}
                              </div>
                              <div className="min-w-0">
-                                <h3 className="font-bold text-slate-800 dark:text-slate-200 text-sm truncate">{reading.name || t('user_name')}</h3>
-                                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono leading-none">#{reading.meterNo}</div>
+                                <h3 className="font-bold text-slate-800 dark:text-slate-200 text-sm truncate">{t(reading.name) || t('user_name')}</h3>
+                                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono leading-none">#{formatNumber(reading.meterNo)}</div>
                              </div>
                          </div>
                          <div className="text-right shrink-0">
@@ -291,10 +282,10 @@ const MeterReadings: React.FC<MeterReadingsProps> = ({
                                 <>
                                   {/* Live Cost Badge - Compact */}
                                   <div className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-[10px] font-bold text-slate-700 dark:text-slate-300 mb-0.5 border border-slate-200 dark:border-slate-700 inline-block">
-                                      ≈ ৳{Math.round(estimatedCost)}
+                                      ≈ ৳{formatNumber(Math.round(estimatedCost))}
                                   </div>
                                   <div className={`text-xs font-bold flex items-center justify-end gap-1 leading-tight ${units > 100 ? 'text-orange-600 dark:text-orange-400' : 'text-green-600 dark:text-green-400'}`}>
-                                      <Zap className="w-3 h-3 fill-current" /> {units} kWh
+                                      <Zap className="w-3 h-3 fill-current" /> {formatNumber(units)} kWh
                                   </div>
                                 </>
                              )}
@@ -302,36 +293,30 @@ const MeterReadings: React.FC<MeterReadingsProps> = ({
                       </div>
                    </div>
 
-                   {/* Inputs (Always Visible Now) - Compact Inline Style */}
+                   {/* Inputs (Always Visible Now) - Compact Horizontal Style */}
                    <div className="px-3 pb-3 grid grid-cols-2 gap-3" onClick={(e) => e.stopPropagation()}>
                       {/* Previous Input */}
-                      <div className="flex items-center bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 px-2 py-1 relative">
-                         <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 shrink-0 mr-1">{t('previous').substring(0,4)}</span>
+                      <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-1 h-9 group-focus-within:border-indigo-500 relative">
+                         <span className="text-[9px] uppercase font-bold text-slate-400 dark:text-slate-500 whitespace-nowrap shrink-0 mr-1">{t('previous').substring(0,4)}</span>
                          <input
                             type="number"
                             value={reading.previous}
                             onChange={(e) => handleChange(reading.id, 'previous', parseFloat(e.target.value) || 0)}
                             onFocus={handleFocus}
-                            className={`bg-transparent border-none text-right font-medium text-slate-700 dark:text-slate-300 text-sm w-full outline-none p-0 ${isNegative ? 'text-red-500' : ''}`}
+                            className={`w-full bg-transparent border-none p-0 text-right text-sm font-medium text-slate-700 dark:text-slate-300 outline-none leading-tight ${isNegative ? 'text-red-500' : ''}`}
                          />
                       </div>
                       
                       {/* Current Input */}
-                      <div className="relative">
-                         <div className="flex items-center bg-white dark:bg-slate-900 rounded-lg border border-indigo-200 dark:border-indigo-900/50 px-2 py-1 shadow-sm">
-                            <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 shrink-0 mr-1">{t('current').substring(0,4)}</span>
-                            <input
-                                type="number"
-                                value={reading.current}
-                                onChange={(e) => handleChange(reading.id, 'current', parseFloat(e.target.value) || 0)}
-                                onFocus={handleFocus}
-                                className={`bg-transparent border-none text-right font-bold text-slate-900 dark:text-white text-sm w-full outline-none p-0 ${isNegative ? 'text-red-500' : ''}`}
-                            />
-                         </div>
-                         {/* Ghost Previous */}
-                         <div className="text-[9px] text-slate-400 text-right mt-0.5 pr-0.5 pointer-events-none absolute -bottom-4 right-0">
-                            {t('prev_val')} {reading.previous}
-                         </div>
+                      <div className="flex items-center justify-between bg-white dark:bg-slate-900 rounded-lg border border-indigo-200 dark:border-indigo-900/50 px-3 py-1 h-9 shadow-sm group-focus-within:border-indigo-500 relative">
+                         <span className="text-[9px] uppercase font-bold text-slate-400 dark:text-slate-500 whitespace-nowrap shrink-0 mr-1">{t('current').substring(0,4)}</span>
+                         <input
+                             type="number"
+                             value={reading.current}
+                             onChange={(e) => handleChange(reading.id, 'current', parseFloat(e.target.value) || 0)}
+                             onFocus={handleFocus}
+                             className={`w-full bg-transparent border-none p-0 text-right text-sm font-bold text-slate-900 dark:text-white outline-none leading-tight ${isNegative ? 'text-red-500' : ''}`}
+                         />
                       </div>
                    </div>
 
@@ -390,7 +375,7 @@ const MeterReadings: React.FC<MeterReadingsProps> = ({
 
                         <div className="mt-2 pt-1 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-[10px] text-slate-400">
                            <div className="flex items-center gap-2">
-                               <span>#{reading.meterNo}</span>
+                               <span>#{formatNumber(reading.meterNo)}</span>
                            </div>
                            
                            <span className="md:hidden flex items-center gap-1"><Trash2 className="w-3 h-3" /> {t('swipe_hint')}</span>
@@ -405,23 +390,37 @@ const MeterReadings: React.FC<MeterReadingsProps> = ({
              );
         })}
 
-        {/* Total Summary Card */}
-        <div className="col-span-1 md:col-span-2 lg:col-span-3 bg-slate-900 dark:bg-black p-3 rounded-xl text-white flex justify-between items-center shadow-md border border-slate-700 mt-2">
-            <div className="flex items-center gap-2">
-                <Zap className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                <span className="font-bold text-xs uppercase tracking-wider">{t('total_user_units')}</span>
+        {/* Total Summary Card with Comparison */}
+        <div className="col-span-1 md:col-span-2 lg:col-span-3 grid grid-cols-1 sm:grid-cols-3 gap-4 bg-slate-900 dark:bg-black p-4 rounded-xl text-white shadow-md border border-slate-700 mt-2">
+            
+            {/* Main Meter Units */}
+            <div className="flex flex-col items-center sm:items-start p-2 bg-slate-800 dark:bg-slate-900/50 rounded-lg">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">{t('main_meter')}</span>
+                <div className="text-lg font-bold font-mono">
+                    {formatNumber(mainMeterUnits)} <span className="text-[10px] font-normal text-slate-500">kWh</span>
+                </div>
             </div>
-            <div className="text-xl font-bold font-mono">
-                {totalUnits} <span className="text-xs font-normal text-slate-400">kWh</span>
+
+            {/* Total Sub Meter Units */}
+            <div className="flex flex-col items-center sm:items-start p-2 bg-slate-800 dark:bg-slate-900/50 rounded-lg border border-indigo-900/30">
+                <span className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider mb-1">{t('total_user_units')}</span>
+                <div className="text-lg font-bold font-mono text-indigo-400">
+                    {formatNumber(totalUnits)} <span className="text-[10px] font-normal text-indigo-300/50">kWh</span>
+                </div>
+            </div>
+
+            {/* Difference */}
+            <div className="flex flex-col items-center sm:items-start p-2 bg-slate-800 dark:bg-slate-900/50 rounded-lg border border-slate-700">
+                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                    {diffUnits >= 0 ? t('system_loss') : t('reading_error')}
+                 </span>
+                 <div className={`text-lg font-bold font-mono flex items-center gap-2 ${diffUnits < 0 ? 'text-red-400' : 'text-orange-400'}`}>
+                    {formatNumber(diffUnits)} <span className="text-[10px] font-normal text-slate-500">kWh</span>
+                    {diffUnits < 0 && <AlertTriangle className="w-4 h-4 text-red-500" />}
+                 </div>
             </div>
         </div>
       </div>
-      
-      <OCRModal 
-         isOpen={isOCRModalOpen} 
-         onClose={() => setIsOCRModalOpen(false)} 
-         onScan={handleScanResult} 
-      />
     </div>
   );
 };

@@ -15,7 +15,7 @@ interface CalculationSummaryProps {
 }
 
 const CalculationSummary: React.FC<CalculationSummaryProps> = ({ result, config, mainMeter, meters, onSaveHistory, tariffConfig }) => {
-  const { t } = useLanguage();
+  const { t, formatNumber, translateMonth, formatDateLocalized } = useLanguage();
   const reportRef = useRef<HTMLDivElement>(null);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
 
@@ -118,14 +118,6 @@ const CalculationSummary: React.FC<CalculationSummaryProps> = ({ result, config,
     }
   };
 
-  const formatDate = (dateStr: string) => {
-    if (!dateStr) return '';
-    const parts = dateStr.split('-'); 
-    if (parts.length !== 3) return dateStr;
-    const [year, month, day] = parts;
-    return `${parseInt(day)}/${parseInt(month)}/${year.slice(-2)}`;
-  };
-
   const mainMeterUnits = Math.max(0, mainMeter.current - mainMeter.previous);
 
   return (
@@ -170,11 +162,11 @@ const CalculationSummary: React.FC<CalculationSummaryProps> = ({ result, config,
              <div className="flex justify-between max-w-2xl mx-auto text-sm font-medium text-slate-600 dark:text-slate-300 pt-2 px-1 sm:px-4">
                 <div className="flex flex-col items-start">
                    <span className="text-[10px] sm:text-xs uppercase text-slate-400 dark:text-slate-500 font-bold tracking-wider">{t('bill_month')}</span>
-                   <span className="text-slate-900 dark:text-white text-base sm:text-lg print:text-base">{config.month}</span>
+                   <span className="text-slate-900 dark:text-white text-base sm:text-lg print:text-base">{translateMonth(config.month)}</span>
                 </div>
                  <div className="flex flex-col items-end">
                    <span className="text-[10px] sm:text-xs uppercase text-slate-400 dark:text-slate-500 font-bold tracking-wider">{t('date_generated')}</span>
-                   <span className="text-slate-900 dark:text-white text-base sm:text-lg print:text-base">{formatDate(config.dateGenerated)}</span>
+                   <span className="text-slate-900 dark:text-white text-base sm:text-lg print:text-base">{formatDateLocalized(config.dateGenerated)}</span>
                 </div>
              </div>
           </div>
@@ -187,48 +179,48 @@ const CalculationSummary: React.FC<CalculationSummaryProps> = ({ result, config,
              <div className="text-sm grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-1 text-slate-900 dark:text-slate-200">
                  <div className="flex justify-between items-baseline">
                     <span className="text-slate-600 dark:text-slate-400">{t('total_bill_payable')}</span>
-                    <span className="font-bold">{config.totalBillPayable}</span>
+                    <span className="font-bold">{formatNumber(config.totalBillPayable)}</span>
                  </div>
                  <div className="flex justify-between items-baseline">
                     <span className="text-slate-600 dark:text-slate-400">{t('calculated_rate')}</span>
-                    <span className="font-bold text-indigo-600 dark:text-indigo-400 print:text-slate-900">{result.calculatedRate.toFixed(2)}</span>
+                    <span className="font-bold text-indigo-600 dark:text-indigo-400 print:text-slate-900">{formatNumber(result.calculatedRate.toFixed(2))}</span>
                  </div>
                  <div className="flex justify-between items-baseline">
                     <span className="text-slate-600 dark:text-slate-400">{t('demand_charge')}</span>
-                    <span className="font-medium">{DEMAND_CHARGE}</span>
+                    <span className="font-medium">{formatNumber(DEMAND_CHARGE)}</span>
                  </div>
                  <div className="flex justify-between items-baseline">
                     <span className="text-slate-600 dark:text-slate-400">{t('meter_rent')}</span>
-                    <span className="font-medium">{METER_RENT}</span>
+                    <span className="font-medium">{formatNumber(METER_RENT)}</span>
                  </div>
                  <div className="flex justify-between items-baseline">
                     <div className="flex items-baseline gap-2">
                         <span className="text-slate-600 dark:text-slate-400">{t('vat_total')}</span>
-                        <span className="text-[10px] text-slate-400 dark:text-slate-600 italic font-normal print:text-[9px] hidden sm:inline">{t('vat_desc_1').replace('5%', `${VAT_RATE_PCT}%`)}</span>
+                        <span className="text-[10px] text-slate-400 dark:text-slate-600 italic font-normal print:text-[9px] hidden sm:inline">{t('vat_desc_1').replace('5%', `${formatNumber(VAT_RATE_PCT)}%`)}</span>
                     </div>
-                    <span className="font-medium">{Math.round(result.vatTotal)}</span>
+                    <span className="font-medium">{formatNumber(Math.round(result.vatTotal))}</span>
                  </div>
                  <div className="flex justify-between items-baseline">
                     <div className="flex items-baseline gap-2">
                         <span className="text-slate-600 dark:text-slate-400">{t('vat_distributed')}</span>
-                        <span className="text-[10px] text-slate-400 dark:text-slate-600 italic font-normal print:text-[9px] hidden sm:inline">{t('vat_desc_2').replace('5%', `${VAT_RATE_PCT}%`)}</span>
+                        <span className="text-[10px] text-slate-400 dark:text-slate-600 italic font-normal print:text-[9px] hidden sm:inline">{t('vat_desc_2').replace('5%', `${formatNumber(VAT_RATE_PCT)}%`)}</span>
                     </div>
-                    <span className="font-medium">{result.vatDistributed.toFixed(2)}</span>
+                    <span className="font-medium">{formatNumber(result.vatDistributed.toFixed(2))}</span>
                  </div>
                  <div className="flex justify-between items-baseline">
                     <div className="flex items-baseline gap-2">
                         <span className="text-slate-600 dark:text-slate-400">{t('vat_fixed')}</span>
-                        <span className="text-[10px] text-slate-400 dark:text-slate-600 italic font-normal print:text-[9px] hidden sm:inline">{t('vat_desc_3').replace('5%', `${VAT_RATE_PCT}%`)}</span>
+                        <span className="text-[10px] text-slate-400 dark:text-slate-600 italic font-normal print:text-[9px] hidden sm:inline">{t('vat_desc_3').replace('5%', `${formatNumber(VAT_RATE_PCT)}%`)}</span>
                     </div>
-                    <span className="font-medium">{result.vatFixed.toFixed(2)}</span>
+                    <span className="font-medium">{formatNumber(result.vatFixed.toFixed(2))}</span>
                  </div>
                  <div className="flex justify-between items-baseline">
                     <span className="text-slate-600 dark:text-slate-400">{t('bkash_fee')}</span>
-                    <span className="font-medium">{config.bkashFee || '-'}</span>
+                    <span className="font-medium">{config.bkashFee ? formatNumber(config.bkashFee) : '-'}</span>
                  </div>
                  <div className="flex justify-between items-baseline">
                     <span className="text-slate-600 dark:text-slate-400">{t('late_fee')}</span>
-                    <span className="font-medium">{result.lateFee > 0 ? Math.round(result.lateFee) : '-'}</span>
+                    <span className="font-medium">{result.lateFee > 0 ? formatNumber(Math.round(result.lateFee)) : '-'}</span>
                  </div>
              </div>
           </div>
@@ -254,12 +246,12 @@ const CalculationSummary: React.FC<CalculationSummaryProps> = ({ result, config,
                      <tr className="bg-slate-50/50 dark:bg-slate-800/30 font-medium">
                         <td className="pl-2 pr-1 py-2 sm:px-4 sm:py-2 text-slate-800 dark:text-slate-200">
                            {t(mainMeter.name)}
-                           <div className="sm:hidden text-[10px] text-slate-400 font-normal">#{mainMeter.meterNo}</div>
+                           <div className="sm:hidden text-[10px] text-slate-400 font-normal">#{formatNumber(mainMeter.meterNo)}</div>
                         </td>
-                        <td className="hidden sm:table-cell px-4 py-2 text-center text-slate-600 dark:text-slate-400">{mainMeter.meterNo}</td>
-                        <td className="px-1 py-2 sm:px-4 sm:py-2 text-right text-slate-600 dark:text-slate-400">{mainMeter.previous}</td>
-                        <td className="px-1 py-2 sm:px-4 sm:py-2 text-right text-slate-600 dark:text-slate-400">{mainMeter.current}</td>
-                        <td className="px-1 py-2 sm:px-4 sm:py-2 text-right font-bold text-slate-900 dark:text-white">{mainMeterUnits}</td>
+                        <td className="hidden sm:table-cell px-4 py-2 text-center text-slate-600 dark:text-slate-400">{formatNumber(mainMeter.meterNo)}</td>
+                        <td className="px-1 py-2 sm:px-4 sm:py-2 text-right text-slate-600 dark:text-slate-400">{formatNumber(mainMeter.previous)}</td>
+                        <td className="px-1 py-2 sm:px-4 sm:py-2 text-right text-slate-600 dark:text-slate-400">{formatNumber(mainMeter.current)}</td>
+                        <td className="px-1 py-2 sm:px-4 sm:py-2 text-right font-bold text-slate-900 dark:text-white">{formatNumber(mainMeterUnits)}</td>
                      </tr>
                      
                      {/* Sub Meters */}
@@ -269,12 +261,12 @@ const CalculationSummary: React.FC<CalculationSummaryProps> = ({ result, config,
                            <tr key={m.id}>
                               <td className="pl-2 pr-1 py-2 sm:px-4 sm:py-2 font-medium text-slate-700 dark:text-slate-300">
                                  {t(m.name)}
-                                 <div className="sm:hidden text-[10px] text-slate-400 font-normal">#{m.meterNo}</div>
+                                 <div className="sm:hidden text-[10px] text-slate-400 font-normal">#{formatNumber(m.meterNo)}</div>
                               </td>
-                              <td className="hidden sm:table-cell px-4 py-2 text-center text-slate-500 dark:text-slate-400">{m.meterNo}</td>
-                              <td className="px-1 py-2 sm:px-4 sm:py-2 text-right text-slate-600 dark:text-slate-400">{m.previous}</td>
-                              <td className="px-1 py-2 sm:px-4 sm:py-2 text-right text-slate-600 dark:text-slate-400">{m.current}</td>
-                              <td className="px-1 py-2 sm:px-4 sm:py-2 text-right font-semibold text-slate-900 dark:text-white">{units}</td>
+                              <td className="hidden sm:table-cell px-4 py-2 text-center text-slate-500 dark:text-slate-400">{formatNumber(m.meterNo)}</td>
+                              <td className="px-1 py-2 sm:px-4 sm:py-2 text-right text-slate-600 dark:text-slate-400">{formatNumber(m.previous)}</td>
+                              <td className="px-1 py-2 sm:px-4 sm:py-2 text-right text-slate-600 dark:text-slate-400">{formatNumber(m.current)}</td>
+                              <td className="px-1 py-2 sm:px-4 sm:py-2 text-right font-semibold text-slate-900 dark:text-white">{formatNumber(units)}</td>
                            </tr>
                         );
                      })}
@@ -283,7 +275,7 @@ const CalculationSummary: React.FC<CalculationSummaryProps> = ({ result, config,
                             <span className="sm:hidden">{t('total')}</span><span className="hidden sm:inline">{t('total_user_units')}</span>
                         </td>
                         <td colSpan={2} className="px-1 sm:px-4 text-right align-middle py-3" style={{ verticalAlign: 'middle' }}>
-                           {result.totalUnits}
+                           {formatNumber(result.totalUnits)}
                         </td>
                      </tr>
                   </tbody>
@@ -309,17 +301,17 @@ const CalculationSummary: React.FC<CalculationSummaryProps> = ({ result, config,
                      {result.userCalculations.map((user) => (
                         <tr key={user.id}>
                            <td className="pl-2 pr-1 py-2 sm:px-4 sm:py-2 font-medium text-slate-700 dark:text-slate-300">{t(user.name)}</td>
-                           <td className="px-1 py-2 sm:px-4 sm:py-2 text-right text-slate-600 dark:text-slate-400">{user.unitsUsed}</td>
-                           <td className="px-1 py-2 sm:px-4 sm:py-2 text-right text-slate-600 dark:text-slate-400">{Math.round(user.energyCost)}</td>
-                           <td className="px-1 py-2 sm:px-4 sm:py-2 text-right text-slate-600 dark:text-slate-400">{Math.round(user.fixedCost)}</td>
-                           <td className="pl-1 pr-2 py-2 sm:px-4 sm:py-2 text-right font-bold text-indigo-700 dark:text-indigo-400 text-sm sm:text-base print:text-black">{Math.round(user.totalPayable)}</td>
+                           <td className="px-1 py-2 sm:px-4 sm:py-2 text-right text-slate-600 dark:text-slate-400">{formatNumber(user.unitsUsed)}</td>
+                           <td className="px-1 py-2 sm:px-4 sm:py-2 text-right text-slate-600 dark:text-slate-400">{formatNumber(Math.round(user.energyCost))}</td>
+                           <td className="px-1 py-2 sm:px-4 sm:py-2 text-right text-slate-600 dark:text-slate-400">{formatNumber(Math.round(user.fixedCost))}</td>
+                           <td className="pl-1 pr-2 py-2 sm:px-4 sm:py-2 text-right font-bold text-indigo-700 dark:text-indigo-400 text-sm sm:text-base print:text-black">{formatNumber(Math.round(user.totalPayable))}</td>
                         </tr>
                      ))}
                      <tr className="bg-slate-900 dark:bg-black font-bold text-white border-t-2 border-slate-800 dark:border-slate-700 print:bg-slate-50 print:text-slate-900 print:border-slate-300 h-10 sm:h-12 leading-none">
                         <td colSpan={4} className="pl-2 pr-1 sm:px-4 text-right uppercase text-[10px] sm:text-xs tracking-wider text-slate-300 dark:text-slate-500 whitespace-nowrap align-middle" style={{ verticalAlign: 'middle' }}>
                             <span className="sm:hidden">{t('total')}</span><span className="hidden sm:inline">{t('total_collection')}</span>
                         </td>
-                        <td className="pl-1 pr-2 sm:px-4 text-right text-emerald-400 print:text-slate-900 align-middle py-2 sm:py-3" style={{ verticalAlign: 'middle' }}>{Math.round(result.totalCollection)}</td>
+                        <td className="pl-1 pr-2 sm:px-4 text-right text-emerald-400 print:text-slate-900 align-middle py-2 sm:py-3" style={{ verticalAlign: 'middle' }}>{formatNumber(Math.round(result.totalCollection))}</td>
                      </tr>
                   </tbody>
                </table>
