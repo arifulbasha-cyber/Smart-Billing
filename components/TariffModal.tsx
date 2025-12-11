@@ -67,7 +67,7 @@ const TariffModal: React.FC<TariffModalProps> = ({ isOpen, onClose, config, onSa
         </div>
 
         {/* Scrollable Content */}
-        <div className="p-6 overflow-y-auto space-y-6">
+        <div className="p-6 overflow-y-auto space-y-6 custom-scrollbar">
           
           {/* Base Charges */}
           <div className="grid grid-cols-2 gap-4">
@@ -100,6 +100,15 @@ const TariffModal: React.FC<TariffModalProps> = ({ isOpen, onClose, config, onSa
                 />
                 <span className="absolute right-3 top-2 text-slate-400">%</span>
               </div>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">{t('bkash_charge')}</label>
+              <input
+                type="number"
+                value={tempConfig.bkashCharge}
+                onChange={(e) => handleChange('bkashCharge', e.target.value)}
+                className="w-full rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+              />
             </div>
           </div>
 

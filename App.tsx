@@ -12,7 +12,10 @@ import TariffModal from './components/TariffModal';
 import TenantManager from './components/TenantManager';
 import TrendsDashboard from './components/TrendsDashboard';
 import CloudSetupModal from './components/CloudSetupModal';
-import { Lightbulb, Database, Download, Settings, Users, BarChart3, Calculator, Cloud, LogIn, LogOut, Moon, Sun } from 'lucide-react';
+import MobileNav from './components/MobileNav';
+import SkeletonLoader from './components/SkeletonLoader';
+import ModalWrapper from './components/ModalWrapper';
+import { Lightbulb, Database, Download, Settings, Users, Cloud, LogIn, LogOut, Moon, Sun, Menu, ArrowRight, PieChart, BarChart3 } from 'lucide-react';
 import { LanguageProvider, useLanguage } from './i18n';
 import { ThemeProvider, useTheme } from './components/ThemeContext';
 import { firebaseService } from './services/firebase';
@@ -22,7 +25,15 @@ import { User } from 'firebase/auth';
 const AppContent: React.FC = () => {
   const { t, language, setLanguage } = useLanguage();
   const { theme, toggleTheme } = useTheme();
-  const [currentView, setCurrentView] = useState<'calculator' | 'trends'>('calculator');
+  
+  // Navigation State
+  const [currentView, setCurrentView] = useState<'input' | 'estimator' | 'report' | 'history'>('input');
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  // Modal States
+  const [activeModal, setActiveModal] = useState<'none' | 'stats' | 'trends' | 'tariff' | 'tenants' | 'cloud'>('none');
+
+  // App Data
   const [config, setConfig] = useState<BillConfig>(INITIAL_CONFIG);
   const [mainMeter, setMainMeter] = useState<MeterReading>(INITIAL_MAIN_METER);
   const [meters, setMeters] = useState<MeterReading[]>(INITIAL_METERS);
@@ -31,15 +42,12 @@ const AppContent: React.FC = () => {
   
   // Tariff State
   const [tariffConfig, setTariffConfig] = useState<TariffConfig>(DEFAULT_TARIFF_CONFIG);
-  const [isTariffModalOpen, setIsTariffModalOpen] = useState(false);
 
   // Tenant State
   const [tenants, setTenants] = useState<Tenant[]>([]);
-  const [isTenantManagerOpen, setIsTenantManagerOpen] = useState(false);
 
   // Cloud State
   const [user, setUser] = useState<User | null>(null);
-  const [isCloudModalOpen, setIsCloudModalOpen] = useState(false);
   const [isFirebaseReady, setIsFirebaseReady] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
 
@@ -54,8 +62,6 @@ const AppContent: React.FC = () => {
   }, []);
 
   // Data Loading Strategy
-  // If User -> Load from Cloud
-  // If No User -> Load from LocalStorage
   useEffect(() => {
     const loadData = async () => {
        setIsSyncing(true);
@@ -115,11 +121,23 @@ const AppContent: React.FC = () => {
   };
 
   const handleConfigChange = (key: keyof BillConfig, value: string | number | boolean) => {
-    setConfig(prev => ({ ...prev, [key]: value }));
+    setConfig(prev => {
+        const newData = { ...prev, [key]: value };
+        // Sync bKash Fee from tariff when toggled
+        if (key === 'includeBkashFee') {
+            newData.bkashFee = value ? tariffConfig.bkashCharge : 0;
+        }
+        return newData;
+    });
   };
 
   const handleTariffSave = async (newConfig: TariffConfig) => {
       setTariffConfig(newConfig);
+      // Also update current config if bKash is enabled to reflect new rate immediately
+      if (config.includeBkashFee) {
+          setConfig(prev => ({ ...prev, bkashFee: newConfig.bkashCharge }));
+      }
+
       if (user && isFirebaseReady) {
          await firebaseService.saveTariff(user.uid, newConfig);
       } else {
@@ -160,6 +178,7 @@ const AppContent: React.FC = () => {
       previous: m.current,
       current: m.current
     })));
+    setIsMenuOpen(false);
   };
 
   // History Actions
@@ -189,18 +208,24 @@ const AppContent: React.FC = () => {
       const includeLateFee = legacyConfig.includeLateFee !== undefined 
           ? legacyConfig.includeLateFee 
           : (legacyConfig.lateFee && legacyConfig.lateFee > 0);
+          
+      const includeBkashFee = legacyConfig.includeBkashFee !== undefined
+          ? legacyConfig.includeBkashFee
+          : (legacyConfig.bkashFee > 0);
 
       const cleanConfig: BillConfig = {
         month: record.config.month,
         dateGenerated: record.config.dateGenerated,
         totalBillPayable: record.config.totalBillPayable,
         bkashFee: record.config.bkashFee,
-        includeLateFee: includeLateFee
+        includeLateFee: includeLateFee,
+        includeBkashFee: includeBkashFee
       };
       setConfig(cleanConfig);
       setMainMeter(record.mainMeter);
       setMeters(record.meters);
-      setCurrentView('calculator');
+      setCurrentView('input');
+      setActiveModal('none');
     }
   };
 
@@ -220,11 +245,13 @@ const AppContent: React.FC = () => {
   // Cloud Actions
   const handleLogin = async () => {
     if (!isFirebaseReady) {
-      setIsCloudModalOpen(true);
+      setActiveModal('cloud');
+      setIsMenuOpen(false);
       return;
     }
     try {
       await firebaseService.login();
+      setIsMenuOpen(false);
     } catch (e) {
       console.error(e);
       alert("Login failed");
@@ -233,8 +260,8 @@ const AppContent: React.FC = () => {
 
   const handleLogout = async () => {
     await firebaseService.logout();
-    setHistory([]); // Clear view
-    // It will auto-reload local data via useEffect
+    setHistory([]); 
+    setIsMenuOpen(false);
   };
 
   const onCloudConnected = () => {
@@ -262,6 +289,7 @@ const AppContent: React.FC = () => {
     const calculatedRate = totalUnits > 0 ? variableCostPool / totalUnits : 0;
 
     const numUsers = meters.length;
+    // Use the actual bkashFee from config which is synced with tariff when toggled
     const totalFixedPool = DEMAND_CHARGE + METER_RENT + vatFixed + config.bkashFee + lateFee;
     const fixedCostPerUser = numUsers > 0 ? totalFixedPool / numUsers : 0;
 
@@ -284,159 +312,196 @@ const AppContent: React.FC = () => {
     return { vatFixed, vatDistributed, vatTotal, lateFee, calculatedRate, totalUnits, userCalculations, totalCollection };
   }, [config, meters, tariffConfig]);
 
+  // Calculate max units for visualization bar
+  const maxUserUnits = useMemo(() => {
+    let max = 0;
+    meters.forEach(m => {
+        const u = Math.max(0, m.current - m.previous);
+        if (u > max) max = u;
+    });
+    return max;
+  }, [meters]);
+
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-12 print:bg-white print:pb-0 transition-colors duration-200">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-24 print:bg-white print:pb-0 transition-colors duration-200">
       {/* Header */}
-      <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-10 no-print transition-colors duration-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-auto sm:h-16 py-3 sm:py-0 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-0">
+      <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30 no-print transition-colors duration-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="bg-indigo-600 p-2 rounded-lg shrink-0">
+            <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-2 rounded-lg shrink-0 shadow-lg shadow-indigo-500/20">
               <Lightbulb className="w-5 h-5 text-white" />
             </div>
-            <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">{t('app_title')}</h1>
-            
-            {/* Sync Indicator */}
-            {user ? (
-               <div className="flex items-center gap-1 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-1 rounded-full text-[10px] font-bold border border-green-100 dark:border-green-800">
-                  <Cloud className="w-3 h-3" /> {t('cloud_mode')}
+            <div>
+               <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight leading-none">{t('app_title')}</h1>
+               <div className="flex items-center gap-1 mt-1">
+                 {user ? (
+                    <div className="flex items-center gap-1 text-[10px] font-bold text-green-600 dark:text-green-400">
+                        <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
+                        {t('cloud_mode')}
+                    </div>
+                 ) : (
+                    <div className="flex items-center gap-1 text-[10px] font-bold text-slate-400 dark:text-slate-500">
+                        <div className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600"></div>
+                        {t('local_mode')}
+                    </div>
+                 )}
+                 {isSyncing && <span className="text-[10px] text-indigo-500 animate-pulse ml-1">{t('syncing')}</span>}
                </div>
-            ) : (
-               <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-2 py-1 rounded-full text-[10px] font-bold border border-slate-200 dark:border-slate-700">
-                  <Database className="w-3 h-3" /> {t('local_mode')}
-               </div>
-            )}
-            {isSyncing && <span className="text-xs text-slate-400 animate-pulse">{t('syncing')}</span>}
+            </div>
           </div>
           
-          <div className="flex flex-wrap items-center justify-center gap-3">
+          <div className="flex items-center gap-2">
             {installPrompt && (
               <button
                 onClick={handleInstallClick}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 dark:bg-slate-700 text-white text-xs font-semibold rounded-full shadow-sm hover:bg-slate-800 dark:hover:bg-slate-600 transition-all animate-pulse"
+                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 dark:bg-slate-700 text-white text-xs font-semibold rounded-full shadow-sm hover:bg-slate-800 dark:hover:bg-slate-600 transition-all animate-pulse"
               >
                 <Download className="w-3 h-3" /> {t('install_app')}
               </button>
             )}
 
-            {/* View Toggles */}
-            <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-full border border-slate-200 dark:border-slate-700">
-                <button 
-                  onClick={() => setCurrentView('calculator')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${currentView === 'calculator' ? 'bg-white dark:bg-slate-600 text-indigo-600 dark:text-indigo-300 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
-                >
-                   <Calculator className="w-3 h-3" /> {t('calculator')}
-                </button>
-                <button 
-                  onClick={() => setCurrentView('trends')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${currentView === 'trends' ? 'bg-white dark:bg-slate-600 text-indigo-600 dark:text-indigo-300 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
-                >
-                   <BarChart3 className="w-3 h-3" /> {t('trends')}
-                </button>
-            </div>
+            {/* Menu Button */}
+            <div className="relative">
+              <button 
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors flex items-center gap-1"
+              >
+                <Menu className="w-6 h-6" />
+                <span className="text-sm font-semibold hidden sm:inline">{t('menu')}</span>
+              </button>
 
-            {/* Settings & Tools */}
-            <div className="flex items-center gap-1">
-              <button onClick={() => setIsTenantManagerOpen(true)} className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors" title={t('tenants')}>
-                <Users className="w-5 h-5" />
-              </button>
-              <button onClick={() => setIsTariffModalOpen(true)} className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors" title={t('settings')}>
-                <Settings className="w-5 h-5" />
-              </button>
-              
-              {/* Theme Toggle */}
-              <button onClick={toggleTheme} className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors" title={theme === 'dark' ? t('light_mode') : t('dark_mode')}>
-                {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-              </button>
-              
-              {/* Cloud/Auth Button */}
-              {user ? (
-                 <div className="flex items-center gap-1 ml-1 pl-2 border-l border-slate-200 dark:border-slate-700">
-                   <img src={user.photoURL || ''} alt="user" className="w-6 h-6 rounded-full border border-slate-200 dark:border-slate-600" />
-                   <button onClick={handleLogout} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors" title={t('logout')}>
-                     <LogOut className="w-5 h-5" />
-                   </button>
-                 </div>
-              ) : (
-                 <div className="flex items-center gap-1 ml-1 pl-2 border-l border-slate-200 dark:border-slate-700">
-                   {!isFirebaseReady ? (
-                      <button onClick={() => setIsCloudModalOpen(true)} className="p-2 text-slate-400 dark:text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-slate-800 rounded-full transition-colors" title={t('cloud_setup')}>
-                         <Cloud className="w-5 h-5" />
-                      </button>
-                   ) : (
-                      <button onClick={handleLogin} className="flex items-center gap-1 px-3 py-1.5 bg-indigo-600 text-white text-xs font-bold rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">
-                         <LogIn className="w-3 h-3" /> {t('login')}
-                      </button>
-                   )}
-                 </div>
+              {/* Dropdown Menu */}
+              {isMenuOpen && (
+                <div className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-200 dark:border-slate-800 py-2 z-50 animate-in fade-in slide-in-from-top-2">
+                  <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800 mb-2">
+                    <div className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Actions</div>
+                  </div>
+                  
+                  <button onClick={() => { setActiveModal('stats'); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2">
+                    <PieChart className="w-4 h-4 text-purple-500" /> {t('consumption_share')}
+                  </button>
+                  <button onClick={() => { setActiveModal('trends'); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2">
+                    <BarChart3 className="w-4 h-4 text-blue-500" /> {t('trends')}
+                  </button>
+                  <button onClick={handleNextMonth} className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2">
+                    <ArrowRight className="w-4 h-4 text-green-500" /> {t('next_month')}
+                  </button>
+                  
+                  <div className="my-2 border-t border-slate-100 dark:border-slate-800"></div>
+                  
+                  <button onClick={() => { setActiveModal('tenants'); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2">
+                    <Users className="w-4 h-4 text-orange-500" /> {t('tenants')}
+                  </button>
+                  <button onClick={() => { setActiveModal('tariff'); setIsMenuOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2">
+                    <Settings className="w-4 h-4 text-slate-500" /> {t('settings')}
+                  </button>
+                  
+                  <div className="my-2 border-t border-slate-100 dark:border-slate-800"></div>
+
+                  <div className="flex items-center justify-between px-4 py-2">
+                    <span className="text-sm text-slate-700 dark:text-slate-200">{theme === 'dark' ? t('dark_mode') : t('light_mode')}</span>
+                    <button onClick={toggleTheme} className="p-1.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                      {theme === 'dark' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between px-4 py-2">
+                     <div className="flex rounded-md bg-slate-100 dark:bg-slate-800 p-0.5">
+                       <button onClick={() => setLanguage('en')} className={`px-2 py-0.5 text-xs font-bold rounded ${language === 'en' ? 'bg-white dark:bg-slate-600 shadow' : ''}`}>EN</button>
+                       <button onClick={() => setLanguage('bn')} className={`px-2 py-0.5 text-xs font-bold rounded ${language === 'bn' ? 'bg-white dark:bg-slate-600 shadow' : ''}`}>BN</button>
+                     </div>
+                  </div>
+
+                  {user ? (
+                     <button onClick={handleLogout} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2">
+                        <LogOut className="w-4 h-4" /> {t('logout')}
+                     </button>
+                  ) : (
+                     <button onClick={handleLogin} className="w-full text-left px-4 py-2 text-sm text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 flex items-center gap-2">
+                        <LogIn className="w-4 h-4" /> {t('login')} / {t('cloud_setup')}
+                     </button>
+                  )}
+                </div>
               )}
-            </div>
-            
-            {/* Language Toggle */}
-            <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-full p-0.5 border border-slate-200 dark:border-slate-700">
-               <button onClick={() => setLanguage('en')} className={`px-2 py-1 rounded-full text-xs font-bold transition-all ${language === 'en' ? 'bg-white dark:bg-slate-600 text-indigo-600 dark:text-indigo-300 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}>EN</button>
-               <button onClick={() => setLanguage('bn')} className={`px-2 py-1 rounded-full text-xs font-bold transition-all ${language === 'bn' ? 'bg-white dark:bg-slate-600 text-indigo-600 dark:text-indigo-300 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}>BN</button>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8 print:p-0 print:space-y-0 print:max-w-none">
-        
-        {currentView === 'calculator' ? (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 print:block">
-            {/* Left Column */}
-            <div className="lg:col-span-5 space-y-6 no-print">
-              <div className="flex items-center gap-2 text-slate-800 dark:text-slate-200 pb-2 border-b border-slate-200 dark:border-slate-800">
-                <Database className="w-5 h-5 text-slate-500 dark:text-slate-400" />
-                <h2 className="text-lg font-bold">{t('data_input_part')}</h2>
-              </div>
-              <BillConfiguration config={config} onChange={handleConfigChange} onNextMonth={handleNextMonth} />
-              <MeterReadings 
-                 mainMeter={mainMeter} 
-                 onMainMeterUpdate={setMainMeter} 
-                 readings={meters} 
-                 onUpdate={setMeters} 
-                 tenants={tenants} 
-                 onManageTenants={() => setIsTenantManagerOpen(true)}
-              />
-              <ConsumptionStats calculations={calculationResult.userCalculations} totalUnits={calculationResult.totalUnits} />
-              <BillEstimator tariffConfig={tariffConfig} />
-              <BillHistory history={history} onLoad={loadFromHistory} onDelete={deleteFromHistory} />
-              
-              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-100 dark:border-blue-800 text-sm text-blue-800 dark:text-blue-300">
-                <h4 className="font-semibold mb-2">{t('how_calc')}</h4>
-                <ul className="list-disc list-inside space-y-1 opacity-80 text-xs">
-                   <li><strong>{t('vat_fixed')}:</strong> (Demand + Rent) × {tariffConfig.vatRate * 100}%</li>
-                   <li><strong>{t('vat_distributed')}:</strong> (Total Bill ÷ {(1 + tariffConfig.vatRate).toFixed(2)} - Fixed Charges) × {tariffConfig.vatRate * 100}%</li>
-                   <li><strong>Rate/Unit:</strong> (Total Bill - Demand - Rent - VAT Fixed) ÷ Total Units</li>
-                   <li><strong>Fixed Cost (User):</strong> (Demand + Rent + VAT Fixed + bKash + Late Fee) ÷ Users</li>
-                </ul>
-              </div>
-            </div>
-
-            {/* Right Column */}
-            <div className="lg:col-span-7 print:w-full">
-               <div className="sticky top-24 print:static">
-                  <CalculationSummary 
-                    result={calculationResult} 
-                    config={config} 
-                    mainMeter={mainMeter}
-                    meters={meters}
-                    onSaveHistory={saveToHistory}
-                    tariffConfig={tariffConfig}
-                  />
-               </div>
-            </div>
-          </div>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 print:p-0 print:max-w-none">
+        {isSyncing && history.length === 0 ? (
+           <SkeletonLoader />
         ) : (
-          <TrendsDashboard history={history} />
-        )}
+          <>
+            {/* VIEW: INPUT (CALCULATOR) */}
+            {currentView === 'input' && (
+              <div className="space-y-6 animate-in fade-in duration-300">
+                <div className="flex items-center gap-2 text-slate-800 dark:text-slate-200 pb-2 border-b border-slate-200 dark:border-slate-800">
+                    <Database className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+                    <h2 className="text-lg font-bold">{t('data_input_part')}</h2>
+                </div>
+                <BillConfiguration config={config} onChange={handleConfigChange} tariffConfig={tariffConfig} />
+                <MeterReadings 
+                     mainMeter={mainMeter} 
+                     onMainMeterUpdate={setMainMeter} 
+                     readings={meters} 
+                     onUpdate={setMeters} 
+                     tenants={tenants} 
+                     onManageTenants={() => setActiveModal('tenants')}
+                     maxUnits={maxUserUnits}
+                />
+              </div>
+            )}
 
+            {/* VIEW: ESTIMATOR (Moved from Modal) */}
+            {currentView === 'estimator' && (
+               <div className="animate-in fade-in duration-300">
+                   <BillEstimator tariffConfig={tariffConfig} />
+               </div>
+            )}
+
+            {/* VIEW: REPORT */}
+            {currentView === 'report' && (
+               <div className="animate-in fade-in duration-300">
+                   <CalculationSummary 
+                        result={calculationResult} 
+                        config={config} 
+                        mainMeter={mainMeter}
+                        meters={meters}
+                        onSaveHistory={saveToHistory}
+                        tariffConfig={tariffConfig}
+                   />
+               </div>
+            )}
+
+            {/* VIEW: HISTORY (Moved from Modal/Logic) */}
+            {currentView === 'history' && (
+               <div className="animate-in fade-in duration-300">
+                   <BillHistory history={history} onLoad={loadFromHistory} onDelete={deleteFromHistory} />
+               </div>
+            )}
+          </>
+        )}
       </main>
 
-      <TariffModal isOpen={isTariffModalOpen} onClose={() => setIsTariffModalOpen(false)} config={tariffConfig} onSave={handleTariffSave} />
-      <TenantManager isOpen={isTenantManagerOpen} onClose={() => setIsTenantManagerOpen(false)} tenants={tenants} onUpdateTenants={handleTenantsUpdate} />
-      <CloudSetupModal isOpen={isCloudModalOpen} onClose={() => setIsCloudModalOpen(false)} onConnected={onCloudConnected} />
+      {/* Mobile Navigation */}
+      <MobileNav 
+         currentView={currentView} 
+         onChangeView={setCurrentView}
+      />
+
+      {/* Modals */}
+      <ModalWrapper isOpen={activeModal === 'stats'} onClose={() => setActiveModal('none')} title={t('consumption_share')}>
+         <ConsumptionStats calculations={calculationResult.userCalculations} totalUnits={calculationResult.totalUnits} />
+      </ModalWrapper>
+
+      <ModalWrapper isOpen={activeModal === 'trends'} onClose={() => setActiveModal('none')} title={t('trends_dashboard')}>
+         <TrendsDashboard history={history} />
+      </ModalWrapper>
+
+      <TariffModal isOpen={activeModal === 'tariff'} onClose={() => setActiveModal('none')} config={tariffConfig} onSave={handleTariffSave} />
+      <TenantManager isOpen={activeModal === 'tenants'} onClose={() => setActiveModal('none')} tenants={tenants} onUpdateTenants={handleTenantsUpdate} />
+      <CloudSetupModal isOpen={activeModal === 'cloud'} onClose={() => setActiveModal('none')} onConnected={onCloudConnected} />
     </div>
   );
 };

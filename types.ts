@@ -5,6 +5,7 @@ export interface BillConfig {
   totalBillPayable: number;
   bkashFee: number;
   includeLateFee: boolean;
+  includeBkashFee: boolean;
 }
 
 export interface MeterReading {
@@ -53,6 +54,7 @@ export interface TariffConfig {
   meterRent: number;
   vatRate: number; // Stored as decimal (e.g., 0.05 for 5%)
   slabs: Slab[];
+  bkashCharge: number;
 }
 
 export interface Tenant {

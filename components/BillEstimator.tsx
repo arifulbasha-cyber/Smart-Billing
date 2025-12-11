@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Calculator, Zap, Info, Banknote } from 'lucide-react';
+import { Calculator, Zap, Info, Banknote, ChevronRight } from 'lucide-react';
 import { useLanguage } from '../i18n';
 import { TariffConfig } from '../types';
 
@@ -181,8 +180,74 @@ const BillEstimator: React.FC<BillEstimatorProps> = ({ tariffConfig }) => {
     e.target.select();
   };
 
-  const forwardResult = calculateBill(typeof units === 'number' ? units : 0);
+  const currentUnits = typeof units === 'number' ? units : 0;
+  const forwardResult = calculateBill(currentUnits);
   const reverseResult = calculateUnitsDetailed(typeof targetBill === 'number' ? targetBill : 0);
+
+  // Helper for Slab Visualization
+  const renderSlabBar = () => {
+     if (mode !== 'forward') return null;
+     
+     // Determine current slab index
+     let currentSlabIdx = -1;
+     let prevLimit = 0;
+     for(let i=0; i<SLABS.length; i++) {
+        if (currentUnits > prevLimit && currentUnits <= SLABS[i].limit) {
+           currentSlabIdx = i;
+           break;
+        }
+        prevLimit = SLABS[i].limit;
+     }
+     if (currentSlabIdx === -1 && currentUnits > 0) currentSlabIdx = SLABS.length; // Above max
+
+     const colors = ['bg-green-500', 'bg-lime-500', 'bg-yellow-500', 'bg-orange-500', 'bg-red-500'];
+
+     return (
+        <div className="mb-6 bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700">
+           <div className="flex justify-between items-center mb-2">
+              <span className="text-xs font-bold uppercase text-slate-500 dark:text-slate-400">{t('current_tier')}</span>
+              <span className="text-xs font-bold text-slate-900 dark:text-white">
+                 {currentUnits} kWh
+              </span>
+           </div>
+           
+           <div className="h-4 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden flex">
+              {SLABS.map((slab, idx) => {
+                 // Simple equal width segments for visualization since slab sizes vary wildly
+                 // Or we can highlight just the active one
+                 const isActive = idx === currentSlabIdx || (idx === SLABS.length -1 && currentSlabIdx >= idx);
+                 const isPassed = idx < currentSlabIdx;
+                 
+                 return (
+                    <div 
+                      key={idx} 
+                      className={`flex-1 border-r border-white/20 last:border-0 relative group transition-all duration-300 ${isPassed ? colors[idx % colors.length] : (isActive ? colors[idx % colors.length] : 'bg-slate-300 dark:bg-slate-600')}`}
+                    >
+                        {/* Tooltipish thing for rates */}
+                        <div className="absolute inset-0 flex items-center justify-center text-[8px] font-bold text-white/90 opacity-0 group-hover:opacity-100 transition-opacity">
+                           {slab.rate}
+                        </div>
+                    </div>
+                 );
+              })}
+              {/* Extra segment for "Over max" */}
+              <div className={`flex-1 relative ${currentSlabIdx >= SLABS.length ? 'bg-red-600' : 'bg-slate-300 dark:bg-slate-600'}`}></div>
+           </div>
+           
+           <div className="flex justify-between mt-1 text-[10px] text-slate-400 font-mono">
+              <span>0</span>
+              {SLABS.map((s,i) => <span key={i}>{s.limit}</span>)}
+              <span>+</span>
+           </div>
+           
+           {currentUnits > 0 && (
+             <div className="mt-2 text-center text-xs font-medium text-indigo-600 dark:text-indigo-400">
+                You are paying <span className="font-bold">৳{currentSlabIdx < SLABS.length ? SLABS[currentSlabIdx]?.rate : SLABS[SLABS.length-1]?.rate}</span> per unit for current consumption.
+             </div>
+           )}
+        </div>
+     );
+  };
 
   return (
     <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 print-break-inside-avoid no-print transition-colors duration-200">
@@ -239,6 +304,9 @@ const BillEstimator: React.FC<BillEstimatorProps> = ({ tariffConfig }) => {
               <span className="absolute right-4 top-3 text-sm text-slate-400 font-medium pointer-events-none">kWh</span>
             </div>
           </div>
+          
+          {/* Visual Slab Bar */}
+          {renderSlabBar()}
 
           {/* Forward Results */}
           <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4 border border-slate-200 dark:border-slate-700 space-y-3">

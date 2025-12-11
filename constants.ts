@@ -7,6 +7,7 @@ export const INITIAL_CONFIG = {
   totalBillPayable: 1497,
   bkashFee: 0,
   includeLateFee: false,
+  includeBkashFee: false,
 };
 
 export const INITIAL_MAIN_METER: MeterReading = {
@@ -27,6 +28,7 @@ export const DEFAULT_TARIFF_CONFIG: TariffConfig = {
   demandCharge: 84,
   meterRent: 10,
   vatRate: 0.05,
+  bkashCharge: 20,
   slabs: [
     { limit: 75, rate: 5.26 },
     { limit: 200, rate: 7.20 },

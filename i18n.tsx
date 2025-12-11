@@ -21,7 +21,12 @@ const translations: Record<Language, Record<string, string>> = {
     'settings': 'Settings',
     'tenants': 'Tenants',
     'trends': 'Trends',
-    'calculator': 'Calculator',
+    'calculator': 'Input',
+    'input': 'Input',
+    'report': 'Report',
+    'history': 'History',
+    'previous_month': 'Previous Month',
+    'menu': 'Menu',
     'dark_mode': 'Dark Mode',
     'light_mode': 'Light Mode',
     
@@ -50,6 +55,7 @@ const translations: Record<Language, Record<string, string>> = {
     'reset_defaults': 'Reset to Defaults',
     'save_changes': 'Save Changes',
     'cancel': 'Cancel',
+    'bkash_charge': 'bKash Charge',
     
     // Tenant Manager
     'tenant_manager': 'Manage Tenants',
@@ -91,7 +97,11 @@ const translations: Record<Language, Record<string, string>> = {
     'current': 'Current',
     'consumption': 'Consumption',
     'total_user_units': 'Total User Units',
+    'total_units': 'Total Units',
     'remove_meter': 'Remove',
+    'no_meters_title': 'No Meters Added',
+    'no_meters_desc': 'Add your first sub-meter to start calculating the bill split.',
+    'add_first_meter': 'Add First Meter',
 
     // Stats
     'consumption_share': 'Consumption Share',
@@ -110,6 +120,7 @@ const translations: Record<Language, Record<string, string>> = {
     'subject_to_vat': 'Subject to VAT',
     'est_total_payable': 'Est. Total Payable',
     'forward_explainer': 'This calculation uses the configured slab rates. It includes VAT on the total base amount.',
+    'current_tier': 'Current Tier',
     
     // Estimator Reverse Logic
     'est_unit_uses': 'ESTIMATED UNIT USES',
@@ -209,7 +220,12 @@ const translations: Record<Language, Record<string, string>> = {
     'settings': 'সেটিংস',
     'tenants': 'ভাড়াটিয়া',
     'trends': 'ট্রেন্ডস',
-    'calculator': 'ক্যালকুলেটর',
+    'calculator': 'ইনপুট',
+    'input': 'ইনপুট',
+    'report': 'রিপোর্ট',
+    'history': 'ইতিহাস',
+    'previous_month': 'পূর্ববর্তী মাস',
+    'menu': 'মেনু',
     'dark_mode': 'ডার্ক মোড',
     'light_mode': 'লাইট মোড',
 
@@ -238,6 +254,7 @@ const translations: Record<Language, Record<string, string>> = {
     'reset_defaults': 'ডিফল্ট রিসেট',
     'save_changes': 'সংরক্ষণ করুন',
     'cancel': 'বাতিল',
+    'bkash_charge': 'বিকাশ চার্জ',
     
     // Tenant Manager
     'tenant_manager': 'ভাড়াটিয়া ব্যবস্থাপনা',
@@ -279,7 +296,11 @@ const translations: Record<Language, Record<string, string>> = {
     'current': 'বর্তমান',
     'consumption': 'ব্যবহার',
     'total_user_units': 'মোট ব্যবহারকারী ইউনিট',
+    'total_units': 'মোট ইউনিট',
     'remove_meter': 'মুছুন',
+    'no_meters_title': 'কোনো মিটার যোগ করা হয়নি',
+    'no_meters_desc': 'বিল স্প্লিট হিসাব শুরু করতে আপনার প্রথম সাব-মিটার যোগ করুন।',
+    'add_first_meter': 'প্রথম মিটার যোগ করুন',
 
     // Stats
     'consumption_share': 'ব্যবহারের ভাগ',
@@ -298,6 +319,7 @@ const translations: Record<Language, Record<string, string>> = {
     'subject_to_vat': 'ভ্যাট প্রযোজ্য',
     'est_total_payable': 'আনুমানিক মোট প্রদেয়',
     'forward_explainer': 'এই গণনা কনফিগার করা স্ল্যাব রেট ব্যবহার করে। মোট বেস পরিমাণের উপর ভ্যাট অন্তর্ভুক্ত।',
+    'current_tier': 'বর্তমান টায়ার',
 
     // Estimator Reverse Logic
     'est_unit_uses': 'আনুমানিক ইউনিট ব্যবহার',

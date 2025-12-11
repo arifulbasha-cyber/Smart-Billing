@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { MeterReading, Tenant } from '../types';
-import { Users, Trash2, Plus, Zap, Lock, Hash, History, Gauge, Camera, Phone, Mail, Settings } from 'lucide-react';
+import { Users, Trash2, Plus, Zap, Lock, Hash, History, Gauge, Camera, Phone, Mail, Settings, Activity } from 'lucide-react';
 import { useLanguage } from '../i18n';
 import OCRModal from './OCRModal';
 
@@ -12,9 +11,10 @@ interface MeterReadingsProps {
   onUpdate: (readings: MeterReading[]) => void;
   tenants: Tenant[];
   onManageTenants?: () => void;
+  maxUnits?: number; // For visualization
 }
 
-const MeterReadings: React.FC<MeterReadingsProps> = ({ mainMeter, onMainMeterUpdate, readings, onUpdate, tenants, onManageTenants }) => {
+const MeterReadings: React.FC<MeterReadingsProps> = ({ mainMeter, onMainMeterUpdate, readings, onUpdate, tenants, onManageTenants, maxUnits = 1 }) => {
   const { t } = useLanguage();
   const [isOCRModalOpen, setIsOCRModalOpen] = useState(false);
   const [scanTarget, setScanTarget] = useState<{ id: string | 'main'; field: 'previous' | 'current' } | null>(null);
@@ -76,19 +76,19 @@ const MeterReadings: React.FC<MeterReadingsProps> = ({ mainMeter, onMainMeterUpd
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {/* Main Meter Card */}
-        <div className="bg-indigo-50/40 dark:bg-indigo-900/20 p-4 rounded-xl border border-indigo-100 dark:border-indigo-800 hover:border-indigo-200 transition-colors relative group shadow-sm">
+        {/* Main Meter Card - Modern Gradient */}
+        <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-4 rounded-xl border border-indigo-400/30 hover:shadow-lg transition-all relative group shadow-md text-white">
            {/* Card Header */}
            <div className="flex justify-between items-center mb-4">
               <div className="flex items-center gap-2">
-                 <div className="bg-indigo-100 dark:bg-indigo-800/50 p-1.5 rounded-lg">
-                    <Lock className="w-4 h-4 text-indigo-600 dark:text-indigo-300" />
+                 <div className="bg-white/20 p-1.5 rounded-lg backdrop-blur-sm">
+                    <Lock className="w-4 h-4 text-white" />
                  </div>
-                 <span className="font-bold text-slate-900 dark:text-slate-100 text-sm uppercase">{t('main_meter')}</span>
+                 <span className="font-bold text-white text-sm uppercase tracking-wide opacity-90">{t('main_meter')}</span>
               </div>
-              <div className="flex items-center gap-1 bg-white dark:bg-slate-900 px-2 py-1 rounded-md border border-indigo-100 dark:border-indigo-800 shadow-sm">
-                 <Zap className="w-3 h-3 text-yellow-500 fill-yellow-500" />
-                 <span className="text-xs font-bold text-slate-900 dark:text-slate-100">{mainMeterUnits}</span>
+              <div className="flex items-center gap-1 bg-white/20 backdrop-blur-sm px-2 py-1 rounded-md border border-white/10 shadow-sm">
+                 <Zap className="w-3 h-3 text-yellow-300 fill-yellow-300" />
+                 <span className="text-xs font-bold text-white">{mainMeterUnits}</span>
               </div>
            </div>
            
@@ -96,7 +96,7 @@ const MeterReadings: React.FC<MeterReadingsProps> = ({ mainMeter, onMainMeterUpd
            <div className="space-y-3">
               {/* Meter No */}
               <div>
-                 <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1 flex items-center gap-1">
+                 <label className="block text-[10px] font-bold text-indigo-100 uppercase mb-1 flex items-center gap-1 opacity-80">
                     {t('meter_no')} <Hash className="w-3 h-3" />
                  </label>
                  <input
@@ -104,13 +104,13 @@ const MeterReadings: React.FC<MeterReadingsProps> = ({ mainMeter, onMainMeterUpd
                     value={mainMeter.meterNo}
                     onChange={(e) => handleMainMeterChange('meterNo', e.target.value)}
                     onFocus={handleFocus}
-                    className="w-full rounded-lg border-indigo-200 dark:border-indigo-800 focus:border-indigo-500 focus:ring-indigo-500 text-sm bg-white dark:bg-slate-950 text-slate-900 dark:text-white"
+                    className="w-full rounded-lg border-white/20 bg-white/10 focus:bg-white/20 text-sm text-white placeholder-indigo-200 focus:border-white focus:ring-1 focus:ring-white transition-all outline-none"
                     placeholder="#"
                  />
               </div>
               <div className="grid grid-cols-2 gap-3">
                  <div>
-                    <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1 flex items-center gap-1">
+                    <label className="block text-[10px] font-bold text-indigo-100 uppercase mb-1 flex items-center gap-1 opacity-80">
                        {t('previous')} <History className="w-3 h-3" />
                     </label>
                     <div className="relative">
@@ -119,11 +119,11 @@ const MeterReadings: React.FC<MeterReadingsProps> = ({ mainMeter, onMainMeterUpd
                          value={mainMeter.previous}
                          onChange={(e) => handleMainMeterChange('previous', parseFloat(e.target.value) || 0)}
                          onFocus={handleFocus}
-                         className="w-full rounded-lg border-indigo-200 dark:border-indigo-800 focus:border-indigo-500 focus:ring-indigo-500 text-sm bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-right font-medium pr-8"
+                         className="w-full rounded-lg border-white/20 bg-white/10 focus:bg-white/20 text-sm text-white placeholder-indigo-200 focus:border-white focus:ring-1 focus:ring-white transition-all outline-none text-right font-medium pr-8"
                       />
                       <button 
                         onClick={() => startScan('main', 'previous')}
-                        className="absolute right-1.5 top-1.5 p-1 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                        className="absolute right-1.5 top-1.5 p-1 text-indigo-200 hover:text-white transition-colors"
                         title={t('scan_meter')}
                       >
                          <Camera className="w-4 h-4" />
@@ -131,7 +131,7 @@ const MeterReadings: React.FC<MeterReadingsProps> = ({ mainMeter, onMainMeterUpd
                     </div>
                  </div>
                  <div>
-                    <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1 flex items-center gap-1">
+                    <label className="block text-[10px] font-bold text-indigo-100 uppercase mb-1 flex items-center gap-1 opacity-80">
                        {t('current')} <Gauge className="w-3 h-3" />
                     </label>
                     <div className="relative">
@@ -140,11 +140,11 @@ const MeterReadings: React.FC<MeterReadingsProps> = ({ mainMeter, onMainMeterUpd
                          value={mainMeter.current}
                          onChange={(e) => handleMainMeterChange('current', parseFloat(e.target.value) || 0)}
                          onFocus={handleFocus}
-                         className="w-full rounded-lg border-indigo-200 dark:border-indigo-800 focus:border-indigo-500 focus:ring-indigo-500 text-sm bg-white dark:bg-slate-950 text-slate-900 dark:text-white font-bold text-right pr-8"
+                         className="w-full rounded-lg border-white/20 bg-white/10 focus:bg-white/20 text-sm text-white placeholder-indigo-200 focus:border-white focus:ring-1 focus:ring-white transition-all outline-none font-bold text-right pr-8"
                       />
                       <button 
                         onClick={() => startScan('main', 'current')}
-                        className="absolute right-1.5 top-1.5 p-1 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                        className="absolute right-1.5 top-1.5 p-1 text-indigo-200 hover:text-white transition-colors"
                         title={t('scan_meter')}
                       >
                          <Camera className="w-4 h-4" />
@@ -155,17 +155,32 @@ const MeterReadings: React.FC<MeterReadingsProps> = ({ mainMeter, onMainMeterUpd
            </div>
         </div>
 
+        {/* Empty State */}
+        {readings.length === 0 && (
+           <div className="col-span-1 md:col-span-1 lg:col-span-2 flex flex-col items-center justify-center p-8 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-dashed border-slate-300 dark:border-slate-700 text-center">
+              <div className="bg-white dark:bg-slate-800 p-4 rounded-full shadow-sm mb-3">
+                 <Zap className="w-8 h-8 text-slate-300 dark:text-slate-600" />
+              </div>
+              <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300">{t('no_meters_title')}</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-500 mt-1 mb-4 max-w-xs">{t('no_meters_desc')}</p>
+              <button onClick={handleAdd} className="text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-3 py-2 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors">
+                 {t('add_first_meter')}
+              </button>
+           </div>
+        )}
+
         {/* Sub Meter Cards */}
         {readings.map((reading) => {
              const units = Math.max(0, reading.current - reading.previous);
              const matchedTenant = tenants.find(t => t.name === reading.name);
+             const usagePercent = maxUnits > 0 ? (units / maxUnits) * 100 : 0;
              
              return (
                <div key={reading.id} className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-700 hover:border-indigo-200 dark:hover:border-indigo-800 transition-colors relative group shadow-sm hover:shadow-md">
                   {/* Remove Button (Absolute top right) */}
                   <button
                       onClick={() => handleRemove(reading.id)}
-                      className="absolute top-3 right-3 text-slate-300 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 transition-colors p-1 opacity-0 group-hover:opacity-100 focus:opacity-100"
+                      className="absolute top-3 right-3 text-slate-300 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 transition-colors p-1 opacity-0 group-hover:opacity-100 focus:opacity-100 z-10"
                       title={t('remove_meter')}
                     >
                       <Trash2 className="w-4 h-4" />
@@ -216,7 +231,7 @@ const MeterReadings: React.FC<MeterReadingsProps> = ({ mainMeter, onMainMeterUpd
                   </div>
                   
                   {/* Inputs Grid */}
-                  <div className="space-y-3">
+                  <div className="space-y-3 relative z-0">
                       <div>
                         <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mb-1 flex items-center gap-1">
                             {t('meter_no')} <Hash className="w-3 h-3" />
@@ -276,11 +291,19 @@ const MeterReadings: React.FC<MeterReadingsProps> = ({ mainMeter, onMainMeterUpd
                       </div>
                   </div>
 
-                  {/* Footer Stats */}
-                  <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700 flex justify-between items-center">
-                     <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{t('consumption')}</span>
-                     <div className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs font-bold ${units > 100 ? 'bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400' : 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400'}`}>
-                        {units} <span className="text-[10px] font-normal opacity-80">kWh</span>
+                  {/* Visual Consumption Bar */}
+                  <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700">
+                     <div className="flex justify-between items-center mb-1">
+                       <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{t('consumption')}</span>
+                       <div className={`flex items-center gap-1 text-xs font-bold ${units > 100 ? 'text-orange-600 dark:text-orange-400' : 'text-green-600 dark:text-green-400'}`}>
+                          {units} <span className="text-[10px] font-normal opacity-80 text-slate-400">kWh</span>
+                       </div>
+                     </div>
+                     <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                        <div 
+                          className={`h-full rounded-full transition-all duration-500 ${units > 100 ? 'bg-orange-500' : 'bg-green-500'}`}
+                          style={{ width: `${Math.min(usagePercent, 100)}%` }}
+                        ></div>
                      </div>
                   </div>
                </div>
