@@ -306,6 +306,7 @@ const translations: Record<Language, Record<string, string>> = {
     'meter_readings': 'মিটার রিডিং',
     'add_meter': 'মিটার যোগ করুন',
     'main_meter': 'প্রধান মিটার',
+    'Main Meter': 'প্রধান মিটার',
     'user_name': 'ব্যবহারকারীর নাম',
     'meter_no': 'মিটার নং',
     'previous': 'পূর্ববর্তী',
