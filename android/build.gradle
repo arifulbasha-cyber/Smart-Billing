@@ -17,6 +17,10 @@ buildscript {
 
 apply from: "variables.gradle"
 
+ext {
+    coreSplashScreenVersion = '1.0.0'
+}
+
 allprojects {
     repositories {
         google()
